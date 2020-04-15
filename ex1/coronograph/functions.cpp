@@ -33,7 +33,7 @@ void read_file(const char *infile) {
 
     // TODO: Delete bellow
     graph->printGraph();
-    graph->detect_cycle();
+    graph->find_cycle();
 
     delete graph;
   }
@@ -63,58 +63,50 @@ void Graph::printGraph() {
   }
 }
 
-void Graph::dfsUtil(int u, int p, int &cyclenumber, int *color, int *parent,
-                    int *mark) {
-  if (color[u] == BLACK) return;  // it is a visited vertex
-
-  if (color[u] == GRAY) {  // we have a cycle
-    cyclenumber++;
-    int cur = p;
-
-    mark[cur] = cyclenumber;
-
-    while (cur != u) {
-      cur = parent[cur];
-      mark[cur] = cyclenumber;
-    }
-    return;
-  }
-
-  // it is not yet initialized
-  parent[u] = p;
-  color[u] = GRAY;
-
+bool Graph::dfs(int v, vector<char> &color, vector<int> &parent,
+                int &cycle_start, int &cycle_end) {
+  color[v] = 1;
   list<int>::iterator i;
-  for (i = adj_list[u].begin(); i != adj_list[u].end(); ++i) {
-    int v = *i;
-
-    if (parent[u] == v) continue;
-
-    dfsUtil(v, u, cyclenumber, color, parent, mark);
+  for (i = adj_list[v].begin(); i != adj_list[v].end(); ++i) {
+    int u = *i;
+    if (color[u] == 0) {
+      parent[u] = v;
+      if (dfs(u, color, parent, cycle_start, cycle_end)) return true;
+    } else if (color[u] == 1) {
+      cycle_end = v;
+      cycle_start = u;
+      return true;
+    }
   }
-
-  color[u] = BLACK;
-  return;
+  color[v] = 2;
+  return false;
 }
 
-void Graph::detect_cycle() {
-  int cyclenumber = 0;
+void Graph::find_cycle() {
+  vector<char> color;
+  vector<int> parent;
+  int cycle_start, cycle_end;
 
-  vector<int> cycles[edges_count];
+  color.assign(vertices_count, 0);
+  parent.assign(vertices_count, -1);
+  cycle_start = -1;
 
-  int color[vertices_count];
-  int parent[vertices_count];
-  int mark[vertices_count];
-  for (int i = 0; i < vertices_count; ++i) {
-    color[i] = WHITE;
-    mark[i] = 0;
+  for (int v = 0; v < vertices_count; v++) {
+    if (color[v] == 0 && Graph::dfs(v, color, parent, cycle_start, cycle_end))
+      break;
   }
 
-  dfsUtil(0, 3, cyclenumber, color, parent, mark);
+  if (cycle_start == -1) {
+    cout << "Acyclic" << endl;
+  } else {
+    vector<int> cycle;
+    cycle.push_back(cycle_start);
+    for (int v = cycle_end; v != cycle_start; v = parent[v]) cycle.push_back(v);
+    cycle.push_back(cycle_start);
+    reverse(cycle.begin(), cycle.end());
 
-  if (cyclenumber == 0)
-    printf("NO CYCLE\n");
-  else {
-    printf("CYLCE %d\n", cyclenumber);
+    cout << "Cycle found: ";
+    for (int v : cycle) cout << v + index << " ";
+    cout << endl;
   }
 }
