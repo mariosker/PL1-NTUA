@@ -20,6 +20,7 @@ class Graph {
 
  public:
   Graph(int V);
+  ~Graph();
   void addEdge(int v, int w);
   int cyclenumber;
   int mark[];
@@ -69,7 +70,6 @@ void read_file(const char *infile) {
       // TODO: add edge
       graph->addEdge(vertex1, vertex2);
     }
-
     // TODO: call solver function
     graph->printCycles(edges_count, graph->mark, graph->cyclenumber);
     // for (int v : graph->find_cycle())
@@ -83,13 +83,15 @@ void read_file(const char *infile) {
 
 Graph::Graph(int V) {
   this->vertices_count = V;
-  this->adj_lists = new list<int>[this->vertices_count];
+  this->adj_lists = new list<int>[V];
 }
+
+Graph::~Graph() { delete[] adj_lists; }
 
 // add the edges to the graph
 void Graph::addEdge(int v, int w) {
-  adj_lists[v - 1].push_front(w - 1);
-  adj_lists[w - 1].push_front(v - 1);
+  this->adj_lists[v - 1].push_front(w - 1);
+  this->adj_lists[w - 1].push_front(v - 1);
 }
 
 // Function to mark the vertex with
@@ -137,13 +139,13 @@ void Graph::dfs_cycle(int u, int p, int color[], int mark[], int par[],
 }
 
 // Function to print the cycles
-void Graph::printCycles(int edges, int mark[], int &cyclenumber) {
+void Graph::printCycles(int vertices_count, int mark[], int &cyclenumber) {
   vector<int> graph[N];
   vector<int> cycles[N];
 
   // push the edges that into the
   // cycle adjacency list
-  for (int i = 1; i <= edges; i++) {
+  for (int i = 1; i <= this->vertices_count; i++) {
     if (mark[i] != 0) cycles[mark[i]].push_back(i);
   }
 

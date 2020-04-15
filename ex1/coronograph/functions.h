@@ -17,8 +17,9 @@ class Graph {
   int edges_count;
   int index;
   list<int> *adj_list;
-  void dfs_cycle(int u, int p, int &cycle_number, vector<int> &color,
-                 vector<int> &mark, vector<int> &parent);
+  void dfsUtil(int u, int p, int &cyclenumber, int *color, int *parent,
+               int *mark);
+  enum Color { WHITE, GRAY, BLACK };
 
  public:
   Graph(int V, int edges_count, int index = 1);

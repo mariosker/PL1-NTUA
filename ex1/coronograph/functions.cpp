@@ -63,62 +63,58 @@ void Graph::printGraph() {
   }
 }
 
-void Graph::dfs_cycle(int u, int p, int &cycle_number, vector<int> &color,
-                      vector<int> &mark, vector<int> &parent) {
-  // completely visited vertex.
-  if (color[u] == 2) return;
+void Graph::dfsUtil(int u, int p, int &cyclenumber, int *color, int *parent,
+                    int *mark) {
+  if (color[u] == BLACK) return;  // it is a visited vertex
 
-  // seen vertex, but was not completely visited -> cycle detected.
-  // backtrack based on parents to find the complete cycle.
-  if (color[u] == 1) {
-    cycle_number++;
+  if (color[u] == GRAY) {  // we have a cycle
+    cyclenumber++;
     int cur = p;
-    mark[cur] = cycle_number;
 
-    // backtrack the vertex which are
-    // in the current cycle thats found
+    mark[cur] = cyclenumber;
+
     while (cur != u) {
       cur = parent[cur];
-      mark[cur] = cycle_number;
+      mark[cur] = cyclenumber;
     }
     return;
   }
 
+  // it is not yet initialized
   parent[u] = p;
-  color[u] = 1;  // partially visited
+  color[u] = GRAY;
 
-  // simple dfs on graph
-  for (int v : adj_list[u]) {
-    // if it has not been visited previously
-    if (v == parent[u]) {
-      continue;
-    }
-    dfs_cycle(v, u, cycle_number, color, mark, parent);
+  list<int>::iterator i;
+  for (i = adj_list[u].begin(); i != adj_list[u].end(); ++i) {
+    int v = *i;
+
+    if (parent[u] == v) continue;
+
+    dfsUtil(v, u, cyclenumber, color, parent, mark);
   }
 
-  // completely visited.
-  color[u] = 2;
+  color[u] = BLACK;
+  return;
 }
 
 void Graph::detect_cycle() {
-  vector<int> color(vertices_count, 0);
-  vector<int> mark(vertices_count, 0);
-  vector<int> parent(vertices_count, 0);
+  int cyclenumber = 0;
 
-  vector<int> cycles[vertices_count];
+  vector<int> cycles[edges_count];
 
-  int cycle_number = 0;
-
-  dfs_cycle(1, 0, cycle_number, color, mark, parent);
-
-  for (int i = 0; i < edges_count; i++) {
-    if (mark[i] != 0) cycles[mark[i]].push_back(i);
+  int color[vertices_count];
+  int parent[vertices_count];
+  int mark[vertices_count];
+  for (int i = 0; i < vertices_count; ++i) {
+    color[i] = WHITE;
+    mark[i] = 0;
   }
 
-  for (int i = 0; i < cycle_number; i++) {
-    // Print the i-th cycle
-    cout << "Cycle Number " << i << ": ";
-    for (int x : cycles[i]) cout << x + index << " ";
-    cout << endl;
+  dfsUtil(0, 3, cyclenumber, color, parent, mark);
+
+  if (cyclenumber == 0)
+    printf("NO CYCLE\n");
+  else {
+    printf("CYLCE %d\n", cyclenumber);
   }
 }
