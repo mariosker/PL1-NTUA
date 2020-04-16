@@ -1,4 +1,10 @@
-#include "functions.h"
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <list>
+#include <set>
+#include <vector>
+using namespace std;
 
 void read_file(const char *infile) {
   FILE *fp = fopen(infile, "r");
@@ -31,13 +37,25 @@ void read_file(const char *infile) {
       graph->addEdge(vertex1, vertex2);
     }
 
-    // TODO: Delete bellow
-    graph->printGraph();
-    graph->find_cycle();
+    is_corona(graph);
 
     delete graph;
   }
   fclose(fp);
+}
+
+void is_corona(Graph *g) {
+  int trees_count = 0;
+  set<int> tree_sizes;
+  if (g->printCycles(trees_count, tree_sizes) == 1) {
+    printf("CORONA %d\n", trees_count);
+    set<int>::iterator it;
+    for (it = tree_sizes.begin(); it != tree_sizes.end(); ++it)
+      printf("%d ", *it);
+    printf("\n");
+  } else {
+    printf("NO CORONA\n");
+  }
 }
 
 Graph::Graph(int V, int edges_count, int index) {
@@ -54,59 +72,98 @@ void Graph::addEdge(int v, int w) {
   adj_list[w - this->index].push_back(v - this->index);
 }
 
-void Graph::printGraph() {
-  for (int i = 0; i < vertices_count; i++) {
-    printf("%d-> [ ", i + index);
+int Graph::countNodes(int n, int p, const set<int> &cycle) {
+  int count = 1;
+  set<int>::iterator it;
+  for (int v : adj_list[n]) {
+    if (v == p) continue;
 
-    for (int v : adj_list[i]) printf("%d ", v + index);
-    printf("]\n");
+    it = cycle.find(v);
+    if (it != cycle.end())
+      continue;
+    else
+      count += countNodes(v, n, cycle);
   }
+  return count;
 }
 
-bool Graph::dfs(int v, vector<char> &color, vector<int> &parent,
-                int &cycle_start, int &cycle_end) {
-  color[v] = 1;
-  list<int>::iterator i;
-  for (i = adj_list[v].begin(); i != adj_list[v].end(); ++i) {
-    int u = *i;
-    if (color[u] == 0) {
-      parent[u] = v;
-      if (dfs(u, color, parent, cycle_start, cycle_end)) return true;
-    } else if (color[u] == 1) {
-      cycle_end = v;
-      cycle_start = u;
-      return true;
+// Function to mark the vertex with
+// different colors for different cycles
+void Graph::dfs_cycle(int u, int p, int *color, int *mark, int *par,
+                      int &cyclenumber) {
+  // already (completely) visited vertex.
+  if (color[u] == 2) {
+    return;
+  }
+
+  // seen vertex, but was not completely visited -> cycle detected.
+  // backtrack based on parents to find the complete cycle.
+  if (color[u] == 1) {
+    cyclenumber++;
+    int cur = p;
+    mark[cur] = cyclenumber;
+
+    // backtrack the vertex which are
+    // in the current cycle thats found
+    while (cur != u) {
+      cur = par[cur];
+      mark[cur] = cyclenumber;
+    }
+    return;
+  }
+  par[u] = p;
+
+  // partially visited.
+  color[u] = 1;
+
+  // simple dfs on graph
+  for (int v : adj_list[u]) {
+    // if it has not been visited previously
+    if (v == par[u]) {
+      continue;
+    }
+    dfs_cycle(v, u, color, mark, par, cyclenumber);
+  }
+
+  // completely visited.
+  color[u] = 2;
+}
+
+bool Graph::printCycles(int &trees_count, set<int> &tree_sizes) {
+  // push the edges that into the
+  // cycle adjacency list
+
+  // arrays required to color the
+  // graph, store the parent of node
+  int color[vertices_count];
+  int par[vertices_count];
+
+  // mark with unique numbers
+  int mark[vertices_count];
+  for (int i = 0; i < vertices_count; i++) {
+    mark[i] = 0;
+    color[i] = 0;
+  }
+  // store the numbers of cycle
+  int cyclenumber = 0;
+
+  dfs_cycle(1, 0, color, mark, par, cyclenumber);
+
+  if (cyclenumber != 1) return false;
+  for (int i = 0; i < vertices_count; i++) {
+    if (color[i] == 0) return false;
+  }
+
+  set<int> cycle;
+  for (int i = 0; i < vertices_count; i++) {
+    if (mark[i] != 0) {
+      trees_count++;
+      cycle.insert(i);
     }
   }
-  color[v] = 2;
-  return false;
-}
-
-void Graph::find_cycle() {
-  vector<char> color;
-  vector<int> parent;
-  int cycle_start, cycle_end;
-
-  color.assign(vertices_count, 0);
-  parent.assign(vertices_count, -1);
-  cycle_start = -1;
-
-  for (int v = 0; v < vertices_count; v++) {
-    if (color[v] == 0 && Graph::dfs(v, color, parent, cycle_start, cycle_end))
-      break;
-  }
-
-  if (cycle_start == -1) {
-    cout << "Acyclic" << endl;
-  } else {
-    vector<int> cycle;
-    cycle.push_back(cycle_start);
-    for (int v = cycle_end; v != cycle_start; v = parent[v]) cycle.push_back(v);
-    cycle.push_back(cycle_start);
-    reverse(cycle.begin(), cycle.end());
-
-    cout << "Cycle found: ";
-    for (int v : cycle) cout << v + index << " ";
-    cout << endl;
-  }
+  // count tree nodes...
+  set<int>::iterator it;
+  for (it = cycle.begin(); it != cycle.end(); ++it)
+    tree_sizes.insert(countNodes(*it, -1, cycle));
+  return true;
 }

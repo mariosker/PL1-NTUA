@@ -16,18 +16,17 @@ class Graph {
   int vertices_count;
   int edges_count;
   int index;
-  list<int> *adj_list;
-  // void dfsUtil(int u, int *color, int *parent);
-  enum Color { WHITE, GRAY, BLACK };
+  list<int> *adj_lists;
+  void dfsCycle(int u, int p, int *color, int *mark, int *par,
+                int &cyclenumber);
+  int countNodes(int n, int p, const set<int> &cycle);
 
  public:
   Graph(int V, int edges_count, int index = 1);
   ~Graph();
   void addEdge(int v, int w);
-  void printGraph();
-  void find_cycle();
-  bool dfs(int v, vector<char> &color, vector<int> &parent, int &cycle_start,
-           int &cycle_end);
+  bool printCycles(int &trees_count, set<int> &tree_sizes);
 };
 
+void is_corona(Graph *g);
 #endif  // FUNCTIONS_
