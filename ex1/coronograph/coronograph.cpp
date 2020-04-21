@@ -32,8 +32,8 @@ class Graph {
   int edges_count;
   int index;
   list<int> *adj_lists;
-  void dfsCycle(int u, int p, int *color, int *mark, int *par,
-                int &cycle_number);
+  void dfsCycle(int u, int p, int *color, unsigned *mark, int *par,
+                unsigned &cycle_number);
   int countNodes(int n, int p, const set<int> &vertices_in_cycle);
 
  public:
@@ -96,9 +96,12 @@ void is_corona(Graph *g) {
   set<int> tree_sizes;
   if (g->findTreesIfCorona(trees_count, tree_sizes) == 1) {
     printf("CORONA %d\n", trees_count);
-    set<int>::iterator it;
-    for (it = tree_sizes.begin(); it != tree_sizes.end(); ++it)
-      printf("%d ", *it);
+    set<int>::iterator it = tree_sizes.begin();
+    while (it != tree_sizes.end()) {
+      printf("%d", *it);
+      ++it;
+      if (it != tree_sizes.end()) printf(" ");
+    }
     printf("\n");
   } else {
     printf("NO CORONA\n");
@@ -142,8 +145,8 @@ Title: Print all the cycles in an undirected graph
 Author: Striver
 Link: https://www.geeksforgeeks.org/print-all-the-cycles-in-an-undirected-graph/
 */
-void Graph::dfsCycle(int u, int p, int *color, int *mark, int *par,
-                     int &cycle_number) {
+void Graph::dfsCycle(int u, int p, int *color, unsigned *mark, int *par,
+                     unsigned &cycle_number) {
   // already (completely) visited vertex.
   if (color[u] == 2) {
     return;
@@ -155,7 +158,6 @@ void Graph::dfsCycle(int u, int p, int *color, int *mark, int *par,
     cycle_number++;
     int cur = p;
     mark[cur] = cycle_number;
-
     // backtrack the vertex which are
     // in the current cycle thats found
     while (cur != u) {
@@ -185,34 +187,44 @@ void Graph::dfsCycle(int u, int p, int *color, int *mark, int *par,
 bool Graph::findTreesIfCorona(int &trees_count, set<int> &tree_sizes) {
   // arrays required to color the
   // graph, store the parent of node
-  int color[vertices_count];
-  int par[vertices_count];
+  int *color = new int[vertices_count];
+  int *par = new int[vertices_count];
 
   // mark with unique numbers
-  int mark[vertices_count];
-  for (int i = 0; i < vertices_count; i++) {
+  unsigned *mark = new unsigned[vertices_count];
+
+  for (int i = 0; i < vertices_count; ++i) {
     mark[i] = 0;
     color[i] = 0;
   }
 
   // store the numbers of cycle
-  int cycle_number = 0;
+  unsigned cycle_number = 0;
 
   dfsCycle(1, 0, color, mark, par, cycle_number);
+  delete[] par;
 
-  if (cycle_number != 1) return false;
-  for (int i = 0; i < vertices_count; i++) {
-    if (color[i] == 0) return false;
+  if (cycle_number != 1) {
+    delete[] mark;
+    delete[] color;
+    return false;
   }
-
-  set<int> vertices_in_cycle;
   for (int i = 0; i < vertices_count; i++) {
+    if (color[i] == 0) {
+      delete[] mark;
+      delete[] color;
+      return false;
+    }
+  }
+  delete[] color;
+  set<int> vertices_in_cycle;
+  for (int i = 0; i < vertices_count; ++i) {
     if (mark[i] != 0) {
       trees_count++;
       vertices_in_cycle.insert(i);
     }
   }
-
+  delete[] mark;
   // count tree nodes...
   set<int>::iterator it;
   for (it = vertices_in_cycle.begin(); it != vertices_in_cycle.end(); ++it)
