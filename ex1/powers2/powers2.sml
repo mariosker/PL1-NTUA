@@ -55,16 +55,16 @@ fun arrayToList arr = Array.foldr (op ::) [] arr;
 (* Source code acquired from:
 An Introduction to Standard ML- Michael P. Fourman
 http://homepages.inf.ed.ac.uk/mfourman/teaching/mlCourse/notes/practicals/p1.html *)
-fun power (x, 0) = 1
-  | power (x, n) = if n mod 2 = 0 then power (x*x, n div 2)
+fun power (x:IntInf.int, 0) = 1
+  | power (x:IntInf.int, n:IntInf.int) = if n mod 2 = 0 then power (x*x, n div 2)
                                         else x * power (x*x, n div 2);
 
 (* Iterates over the list and assigns the exponent *)
-fun fordown n k lst sum = (
+fun fordown n (k:IntInf.int) lst (sum:IntInf.int)= (
         if k < 0 then ((sum + 1), lst)
         else (
-            Array.update (lst, Int.toInt (k), IntInf.log2 (Int.toLarge(n - sum)) );
-            fordown n (k-1) lst ( (sum - 1) + power (2, (Array.sub(lst, k)) ) )
+            Array.update (lst,  Int.fromLarge k, IntInf.log2 ((n - sum)) );
+            fordown n (k-1) lst ( (sum - 1) + power (2, Int.toLarge(Array.sub(lst, Int.fromLarge k))))
             )
 );
 
@@ -96,7 +96,7 @@ fun solver n 0 = print_list []
         if (n < k) then print_list []
         else
             let
-                val (s, a) =  fordown n (k-1) (Array.array(k, 1)) (k-1)
+                val (s, a) =  fordown n (k-1) (Array.array( Int.fromLarge k, 1)) (k-1)
             in
                 if (s <> n) then print_list [] else (print_list (arrayToList (transformer a)))
             end;
@@ -106,7 +106,7 @@ fun solver n 0 = print_list []
 fun solve_each_pair 0 acc = ()
 	| solve_each_pair n [] = ()
 	| solve_each_pair n ((a, b)::t) = (
-        solver a b;
+        solver (Int.toLarge a) (Int.toLarge b);
 		solve_each_pair (n-1) t
   );
 
@@ -115,5 +115,5 @@ fun powers2 filename =
 	let
 	  val (a, b) = parse filename;
 	in
-	  solve_each_pair a b
+	  solve_each_pair  a  b
 	end;
