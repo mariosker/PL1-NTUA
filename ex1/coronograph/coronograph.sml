@@ -19,10 +19,12 @@ fun add_edges u w graph =
 		graph
 	end;
 
+
 (*Input parse code by Stavros Aronis, modified by Nick Korasidis. *)
 (* Function to read an integer from an input stream *)
 fun next_int input =
 	Option.valOf (TextIO.scanStream (Int.scan StringCvt.DEC) input)
+
 
 (* read graph eges and add them to graph *)
 fun read_edges 0 inStream graph = graph
@@ -35,6 +37,7 @@ fun read_edges 0 inStream graph = graph
 			read_edges (k-1) inStream (add_edges u w graph)
 		end
 
+
 (* read graph properties and return graph *)
 fun read_graph inStream =
 	let
@@ -46,7 +49,7 @@ fun read_graph inStream =
 		(N, graph)
 	end;
 
-
+(* print a list as [x,x,x,x] *)
 fun print_list lst =
 	let
 		fun print_aux nil = print "]\n"
@@ -57,16 +60,18 @@ fun print_list lst =
 		print_aux lst
 	end;
 
-fun print_graph graph len =
-		if len = 0
+(* print graph having given length *)
+fun print_graph graph len n =
+		if n = len
 		then ()
 		else
 		(
-			print_list (Array.sub(graph, len-1));
-			print_graph graph (len-1)
+			print ("vertice " ^ Int.toString (n+1) ^ " -> ");
+			print_list (Array.sub(graph, n));
+			print_graph graph len (n+1)
 		);
 
-
+(* read file and get graph *)
 fun parse file =
 	let
 		(* Open input file. *)
@@ -82,9 +87,8 @@ fun parse file =
 				let
 					val (N, graph) = read_graph inStream
 				in
-					print ("TEST #" ^ Int.toString (T-i) ^ "\n");
-					print_graph graph N;
-					print ("TEST END#" ^ Int.toString (T-i) ^ "\n")
+					print ("\nGRAPH #" ^ Int.toString (T-i) ^ "\n");
+					print_graph graph N 0
 				end;
 				scan_test (i-1)
 			)
@@ -93,7 +97,9 @@ fun parse file =
 	end;
 
 
-parse "corona.txt";
-
+(* caller function *)
 fun coronograph filename =
 	parse filename;
+
+(* run test *)
+parse "corona.txt";
