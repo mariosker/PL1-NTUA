@@ -49,6 +49,7 @@ fun read_graph inStream =
 		(N, graph)
 	end;
 
+
 (* print a list as [x,x,x,x] *)
 fun print_list lst =
 	let
@@ -60,6 +61,18 @@ fun print_list lst =
 		print_aux lst
 	end;
 
+
+(* print a list as [x,x,x,x] *)
+fun print_tree_list lst =
+	let
+		fun print_aux nil = print "\n"
+			| print_aux (h::[]) = (print (Int.toString(h)); print_aux [])
+			| print_aux (h::t) = (print (Int.toString(h)); print " "; print_aux t);
+	in
+		print_aux lst
+	end;
+
+
 (* print graph having given length *)
 fun print_graph graph len n =
 		if n = len
@@ -70,6 +83,63 @@ fun print_graph graph len n =
 			print_list (Array.sub(graph, n));
 			print_graph graph len (n+1)
 		);
+
+(* void is_corona(Graph *g) {
+  int trees_count = 0;
+  set<int> tree_sizes;
+  if (g->findTreesIfCorona(trees_count, tree_sizes) == 1) {
+    printf("CORONA %d\n", trees_count);
+    set<int>::iterator it = tree_sizes.begin();
+    while (it != tree_sizes.end()) {
+      printf("%d", *it);
+      ++it;
+      if (it != tree_sizes.end()) printf(" ");
+    }
+    printf("\n");
+  } else {
+    printf("NO CORONA\n");
+  }
+} *)
+
+
+(* counts nodes in tree *)
+fun count_nodes node parent nil vertices_in_cycle graph = 1
+| count_nodes node parent (neighbor::neighbors) vertices_in_cycle graph =
+	if (neighbor = parent orelse (List.exists (fn x => x = neighbor) vertices_in_cycle)) then
+		count_nodes node parent neighbors vertices_in_cycle graph
+	else
+		count_nodes neighbor node (Array.sub (graph, neighbor)) vertices_in_cycle graph + count_nodes node parent neighbors vertices_in_cycle graph
+
+
+
+fun get_tree_sizes nil vertices_in_cycle graph = []
+	| get_tree_sizes (h::[]) vertices_in_cycle graph =
+		let
+			val node = h;
+			val parent = ~1;
+			val neighbors = Array.sub (graph, node);
+			val nodes_count = count_nodes node parent neighbors vertices_in_cycle graph
+		in
+			[nodes_count]@ get_tree_sizes [] vertices_in_cycle graph
+		end
+	| get_tree_sizes (h::nodes_in_cycle) vertices_in_cycle graph =
+	let
+		val node = h;
+		val parent = ~1;
+		val neighbors = Array.sub (graph, node);
+		val nodes_count = count_nodes node parent neighbors vertices_in_cycle graph
+	in
+		[nodes_count] @ get_tree_sizes nodes_in_cycle vertices_in_cycle graph
+	end;
+
+
+fun print_sorted_tree_sizes vertices_in_cycle graph =
+	let
+		val trees = ListMergeSort.sort (fn (s, t) => s > t) (get_tree_sizes vertices_in_cycle vertices_in_cycle graph)
+	in
+		print_tree_list trees
+	end;
+
 
 (* read file and get graph *)
 fun parse file =
@@ -85,10 +155,12 @@ fun parse file =
 		 | scan_test i =
 			(
 				let
-					val (N, graph) = read_graph inStream
+					val (N, graph) = read_graph inStream;
+					val vertices_in_cycle = [0, 3, 4];
 				in
 					print ("\nGRAPH #" ^ Int.toString (T-i) ^ "\n");
-					print_graph graph N 0
+					print_graph graph N 0;
+					print_sorted_tree_sizes vertices_in_cycle graph
 				end;
 				scan_test (i-1)
 			)
@@ -102,4 +174,4 @@ fun coronograph filename =
 	parse filename;
 
 (* run test *)
-parse "corona.txt";
+parse "test.txt";
