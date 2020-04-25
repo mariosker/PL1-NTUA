@@ -26,7 +26,7 @@ fun next_int input =
 	Option.valOf (TextIO.scanStream (Int.scan StringCvt.DEC) input)
 
 
-(* read graph eges and add them to graph *)
+(* read graph edges and add them to graph *)
 fun read_edges 0 inStream graph = graph
 	| read_edges k inStream graph =
 		let
@@ -72,179 +72,83 @@ fun print_tree_list lst =
 		print_aux lst
 	end;
 
-
-(* print graph having given length *)
-fun print_graph graph len n =
-		if n = len
-		then ()
-		else
-		(
-			print ("vertice " ^ Int.toString (n+1) ^ " -> ");
-			print_list (Array.sub(graph, n));
-			print_graph graph len (n+1)
-		);
-
-(* void Graph::dfsCycle(int u, int p, unsigned &cycle_number) {
-  if (cycle_number >= 2) return;  (*<---useless *)
-
-  // already (completely) visited vertex.
-  if (color[u] == 2) {
-	return;
-  }
-
-  // seen vertex, but was not completely visited -> cycle detected.
-  // backtrack based on parents to find the complete cycle.
-  if (color[u] == 1) {
-	cycle_number++;
-	int cur = p;
-	mark[cur] = cycle_number;
-	// backtrack the vertex which are
-	// in the current cycle thats found
-	whileloop (cur != u) {
-	  cur = par[cur];
-	  mark[cur] = cycle_number;
-	}
-	return;
-  }
-  par[u] = p;
-
-  // partially visited.
-  color[u] = 1;
-
-  // simple dfs on graph
-  for (int v : adj_lists[u]) {
-	// if it has not been visited previously
-	if (v == par[u]) {
-	  continue;
-	}
-	dfsCycle(v, u, cycle_number);
-  }
-
-  // completely visited.
-  color[u] = 2;
-} *)
-
-(* 
-(* FIXME: From Test *)
-fun dfs_cycle vertices_count graph=
-	let
-		val color = (Array.array(vertices_count, 0));
-		val mark = (Array.array(vertices_count, 0));
-		val par = (Array.array(vertices_count, 0));
-		val cycle_number = ref 0;
-		val cur = ref 0;
-
-		fun dfs_aux u p graph =
-			if (Array.sub(color,u) >= 2) then (!cycle_number, color, mark, par) else (
-				if(Array.sub(color,u) = 1) then(
-					cycle_number := !cycle_number + 1;
-					cur = ref p;
-					Array.update(mark, !cur, !cycle_number);
-					let
-						fun whileloop cur u =
-							if (!cur = u) then (!cycle_number, color, mark, par) else
-								(cur := Array.sub(par, !cur);
-								Array.update(mark, !cur, !cycle_number);
-								whileloop cur u)
-					in
-						whileloop cur u
-					end;
-					
-					(!cycle_number, color, mark, par)
-
-				) else (
-					Array.update(par, u, p);
-					Array.update(color, u, 1);
-					
-					let
-					val adj_list = Array.sub(graph, u);
-					fun iterate_neighbors nil = (!cycle_number, color, mark, par)
-						| iterate_neighbors (neighbor::neighbors) = 
-							if (u = Array.sub(par, u)) then (!cycle_number, color, mark, par)
-							else
-								(let 
-									val cycle_number = ref 0;
-									val (!cycle_number, color, mark, par) = dfs_aux neighbor u graph
-								in
-									(cycle_number, color, mark, par)
-								end )
-					in
-						iterate_neighbors adj_list
-					end;			
-					
-					Array.update(color, u, 2);
-					(!cycle_number, color, mark, par)
-					)
-			);
-	in
-		dfs_aux 1 0 graph (* => (cycle_number, color, mark) *)
- 	end;
- *)
-
- use "corona-sml-test.sml";
-
-(*
+(* Runs dfs on the graph and returns
+cycle_number (if cycle_number != 1 then number is not correct) 
+visited nodes (to check for multiple graphs) 
+and nodes in cycle *)
 fun dfs_cycle vertices graph =
 let
-	val color = Array.array(vertices, 0);
-	val mark = Array.array(vertices, 0);
-	val par = Array.array(vertices, 0);
-  
-	val cycle_number = ref 0;	
-  
-	fun dfs_aux u p graph = 
-		if (Array.sub(color,u) >= 2) then () else
-		(
-			if(Array.sub(color,u) = 1) then
-			(
-				cycle_number := !cycle_number + 1;
-				let 
-					val cur = ref p;
-				in
-				(
-					Array.update(mark, !cur, !cycle_number);
-					let
-						fun whileloop cur u =
-							if (!cur = u) then () else
-								(
-									cur := Array.sub(par, !cur);
-									Array.update(mark, !cur, !cycle_number);
-									whileloop cur u
-								)
-					in
-						whileloop cur u
-					end
-				)
-				end;
-				()
-			)
-			else 
-			(
-				Array.update(par, u, p);
-				Array.update(color, u, 1);
-				
-				let
-					val adj_list = Array.sub(graph, u);
-					fun iterate_neighbors nil = ()
-						| iterate_neighbors (neighbor::neighbors) = 
-							if (u = Array.sub(par, u)) then ()
-							else
-								(
-									dfs_aux neighbor u graph
-								)
-				in
-					iterate_neighbors adj_list
-				end;			
-				
-				Array.update(color, u, 2);
-				()
-			)
+	val visited = Array.array(vertices, 0); 
+	val parent = Array.array(vertices, ~1);
+	val cycle = Array.array(vertices,0);  
+
+	fun dfs_util v par graph =
+		if (Array.sub(visited, v) <> 0) then
+		(	
+			Array.update(visited, v, 2);
+			0
 		)
-		
+		else
+		(
+			Array.update(visited, v, 1);
+			Array.update(parent, v, par);
+
+			let
+				val adj_list = Array.sub(graph, v);
+				fun iterate_neighbors nil = 0
+					| iterate_neighbors (neighbor::neighbors) =
+						if (Array.sub(visited, neighbor) = 0) then
+						(
+							let
+								val res = iterate_neighbors neighbors
+							in
+								if (res > 1) then 2 else
+								(dfs_util neighbor v graph) + (res)
+							end
+						)
+						else
+						(
+							if (par <> neighbor) then
+							(
+								let
+									fun whileloop cur neighbor =
+										if (cur <> neighbor) then
+										(
+											Array.update(cycle, cur, 1);
+											whileloop (Array.sub(parent, cur)) neighbor
+										)
+										else ()
+								in
+									Array.update(cycle, neighbor, 1);
+									whileloop v neighbor;
+
+									let
+										val res = iterate_neighbors neighbors
+									in
+										if (res > 1) then 2 else
+											1 + res
+									end
+								end
+							)
+							else
+							(
+								let
+									val res = iterate_neighbors neighbors
+								in
+									if (res > 1) then 2 else
+										res
+								end
+							)
+						)
+			in
+				iterate_neighbors adj_list
+			end
+		);
+		val cycle_number = dfs_util 0 1 graph
 in
-	dfs_aux 1 0 graph;
-	(cycle_number, color, mark)
-end; *)
+	(cycle_number, visited, cycle)
+end
+
 
 (* counts nodes in tree *)
 fun count_nodes node parent nil vertices_in_cycle graph = 1
@@ -291,7 +195,7 @@ fun vertices_in_cycle 0 mark = (0, [])
 	let
 		val (a,b) = vertices_in_cycle (index-1) mark
 	in
-		if (Array.sub(mark, index-1) < 0) then (a+1, b@[index-1])
+		if (Array.sub(mark, index-1) = 1) then (a+1, b@[index-1])
 		else (a, b)
 	end; 
 
@@ -323,13 +227,7 @@ fun parse file =
 					let
 					  val (cycle_number, color, mark) = dfs_cycle N graph
 					in
-						print("CYCLE NUMBER: ");
-						print(Int.toString(!cycle_number) ^ "\n");
-						print("COLOR: ");
-						print_list_other_malakia((Array.toList(color)));
-						print("MARK: ");
-						print_list_other_malakia((Array.toList(mark)));
-						if( (Array.exists (fn x => x = 0) color) orelse (!cycle_number <> 1) ) then print ("NO CORONA\n") 
+						if( (Array.exists (fn x => x = 0) color) orelse (cycle_number <> 1) ) then print ("NO CORONA\n") 
 						else print_final_output mark N graph
 					end
 				end;
@@ -343,6 +241,3 @@ fun parse file =
 (* caller function *)
 fun coronograph filename =
 	parse filename;
-
-(* run test *)
-parse "test.txt";

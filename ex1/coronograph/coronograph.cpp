@@ -192,6 +192,11 @@ void Graph::dfsCycle(int u, int p, unsigned &cycle_number) {
     // backtrack the vertex which are
     // in the current cycle thats found
     while (cur != u) {
+      // FIXME: Start
+      printf("-----Debug#2i: cur: %d ", cur);
+      for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
+      printf("\n");
+      // FIXME: End
       cur = par[cur];
       mark[cur] = cycle_number;
     }
