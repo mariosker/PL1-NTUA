@@ -74,5 +74,10 @@
         "valarray": "cpp",
         "variant": "cpp",
         "bit": "cpp"
+    },
+    "editor.trimAutoWhitespace": false,
+    "files.trimTrailingWhitespace": false,
+    "[sml]": {
+        "editor.tabSize": 4
     }
 }

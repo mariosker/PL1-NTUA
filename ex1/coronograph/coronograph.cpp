@@ -8,6 +8,7 @@ Description : Coronograph. (C++)
 School of ECE, National Technical University of Athens.
 **************************************************************************/
 
+#include <algorithm>
 #include <fstream>
 #include <list>
 #include <set>
@@ -32,15 +33,17 @@ class Graph {
   int edges_count;
   int index;
   list<int> *adj_lists;
-  void dfsCycle(int u, int p, int *color, unsigned *mark, int *par,
-                unsigned &cycle_number);
+  int *color;
+  int *par;
+  unsigned *mark;
+  void dfsCycle(int u, int p, unsigned &cycle_number);
   int countNodes(int n, int p, const set<int> &vertices_in_cycle);
 
  public:
   Graph(int V, int edges_count, int index = 1);
   ~Graph();
   void addEdge(int v, int w);
-  bool findTreesIfCorona(int &trees_count, set<int> &tree_sizes);
+  bool findTreesIfCorona(int &trees_count, vector<int> &tree_sizes);
 };
 
 void is_corona(Graph *g);
@@ -93,10 +96,11 @@ void read_file(const char *infile) {
 
 void is_corona(Graph *g) {
   int trees_count = 0;
-  set<int> tree_sizes;
+  vector<int> tree_sizes;
   if (g->findTreesIfCorona(trees_count, tree_sizes) == 1) {
     printf("CORONA %d\n", trees_count);
-    set<int>::iterator it = tree_sizes.begin();
+    sort(tree_sizes.begin(), tree_sizes.end());
+    vector<int>::iterator it = tree_sizes.begin();
     while (it != tree_sizes.end()) {
       printf("%d", *it);
       ++it;
@@ -113,9 +117,23 @@ Graph::Graph(int V, int edges_count, int index) {
   this->edges_count = edges_count;
   this->index = index;
   adj_lists = new list<int>[V];
+
+  color = new int[vertices_count];
+  par = new int[vertices_count];
+  mark = new unsigned[vertices_count];
+
+  for (int i = 0; i < vertices_count; ++i) {
+    mark[i] = 0;
+    color[i] = 0;
+  }
 }
 
-Graph::~Graph() { delete[] adj_lists; }
+Graph::~Graph() {
+  delete[] adj_lists;
+  delete[] color;
+  delete[] par;
+  delete[] mark;
+}
 
 void Graph::addEdge(int v, int w) {
   adj_lists[v - this->index].push_back(w - this->index);
@@ -145,27 +163,50 @@ Title: Print all the cycles in an undirected graph
 Author: Striver
 Link: https://www.geeksforgeeks.org/print-all-the-cycles-in-an-undirected-graph/
 */
-void Graph::dfsCycle(int u, int p, int *color, unsigned *mark, int *par,
-                     unsigned &cycle_number) {
+void Graph::dfsCycle(int u, int p, unsigned &cycle_number) {
   // already (completely) visited vertex.
   if (color[u] == 2) {
     return;
   }
-
+  // FIXME: Start
+  printf("Debug#0: u:%d p:%d ", u, p);
+  for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
+  printf("\n");
+  // FIXME: End
   // seen vertex, but was not completely visited -> cycle detected.
   // backtrack based on parents to find the complete cycle.
   if (color[u] == 1) {
+    // FIXME: Start
+    printf("--Debug#1: ");
+    for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
+    printf("\n");
+    // FIXME: End
     cycle_number++;
     int cur = p;
     mark[cur] = cycle_number;
+    // FIXME: Start
+    printf("----Debug#2: ");
+    for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
+    printf("\n");
+    // FIXME: End
     // backtrack the vertex which are
     // in the current cycle thats found
     while (cur != u) {
       cur = par[cur];
       mark[cur] = cycle_number;
     }
+    // FIXME: Start
+    printf("------Debug#3: ");
+    for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
+    printf("\n");
+    // FIXME: End
     return;
   }
+  // FIXME: Start
+  printf("---------Debug#4: ");
+  for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
+  printf("\n");
+  // FIXME: End
   par[u] = p;
 
   // partially visited.
@@ -177,46 +218,42 @@ void Graph::dfsCycle(int u, int p, int *color, unsigned *mark, int *par,
     if (v == par[u]) {
       continue;
     }
-    dfsCycle(v, u, color, mark, par, cycle_number);
+    // FIXME: Start
+    printf("----------Debug#4i: v: %d ", v);
+    for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
+    printf("\n");
+    // FIXME: End
+    dfsCycle(v, u, cycle_number);
   }
 
   // completely visited.
   color[u] = 2;
+  // FIXME: Start
+  printf("----------Debug#5: ");
+  for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
+  printf("\n");
+  // FIXME: End
 }
 
-bool Graph::findTreesIfCorona(int &trees_count, set<int> &tree_sizes) {
+bool Graph::findTreesIfCorona(int &trees_count, vector<int> &tree_sizes) {
   // arrays required to color the
   // graph, store the parent of node
-  int *color = new int[vertices_count];
-  int *par = new int[vertices_count];
 
   // mark with unique numbers
-  unsigned *mark = new unsigned[vertices_count];
-
-  for (int i = 0; i < vertices_count; ++i) {
-    mark[i] = 0;
-    color[i] = 0;
-  }
 
   // store the numbers of cycle
   unsigned cycle_number = 0;
 
-  dfsCycle(1, 0, color, mark, par, cycle_number);
-  delete[] par;
+  dfsCycle(1, 0, cycle_number);
 
   if (cycle_number != 1) {
-    delete[] mark;
-    delete[] color;
     return false;
   }
   for (int i = 0; i < vertices_count; i++) {
     if (color[i] == 0) {
-      delete[] mark;
-      delete[] color;
       return false;
     }
   }
-  delete[] color;
   set<int> vertices_in_cycle;
   for (int i = 0; i < vertices_count; ++i) {
     if (mark[i] != 0) {
@@ -224,10 +261,19 @@ bool Graph::findTreesIfCorona(int &trees_count, set<int> &tree_sizes) {
       vertices_in_cycle.insert(i);
     }
   }
-  delete[] mark;
+
+  // FIXME:
+  printf("COLOR \n");
+  for (int i = 0; i < vertices_count; ++i) printf("%d", color[i]);
+  printf("\n");
+
+  printf("MARK \n");
+  for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
+  printf("\n");
+
   // count tree nodes...
   set<int>::iterator it;
   for (it = vertices_in_cycle.begin(); it != vertices_in_cycle.end(); ++it)
-    tree_sizes.insert(countNodes(*it, -1, vertices_in_cycle));
+    tree_sizes.push_back(countNodes(*it, -1, vertices_in_cycle));
   return true;
 }

@@ -1,113 +1,112 @@
-(* signature ORD_NODE =
-sig
-  type node
-  val compare : node * node -> order
-  val format : node -> string
-end
-
-signature GRAPH =
-sig
-  structure Node : ORD_NODE
-  type graph
-  val empty : graph
-
-  (* val addEdge : graph * Node.node * Node.node -> graph
-  *  addEdge (g, x, y) => g with an edge added from x to y. *)
-  val addEdge : graph * Node.node * Node.node -> graph
-
-  val format : graph -> string
-end
-
-functor UndirectedGraphFn (Node : ORD_NODE) :> GRAPH =
-struct
-  structure Node = Node
-  structure Key = struct
-    type ord_key = Node.node
-    val compare = Node.compare
-  end
-  structure Map = BinaryMapFn(Key)
-
-  type graph = Node.node list Map.map (* Adjacency list *)
-  val empty = Map.empty
-
-  fun addEdge (g, x, y) = (* snip *)
-  fun format g = (* snip *)
-end
-
-structure UDG = UndirectedGraphFn(struct
-  type node = int
-  val compare = Int.compare
-  val format = Int.toString
-end)
+fun print_list_other_malakia lst =
+	let
+		fun print_aux nil = print "]\n"
+			| print_aux (h::[]) = (print (Int.toString(h)); print_aux [])
+			| print_aux (h::t) = (print (Int.toString(h)); print ","; print_aux t);
+	in
+		print "[";
+		print_aux lst
+	end;
 
 
-
-
-vector = array(array * n)
-
-fun create_arrays n = (Array.array(n), Array.array)
-val (vector,color, mark) = create_arrays vector
-
-fun add_edges vect =
-
-add_edges vector[i].pushback
-
-
-
-(* -=========================================================================== *)
-
-(*C++*)
-class Graph {
- private:
-  int vertices_count;
-  int edges_count;
-  int index;
-  list<int> *adj_lists;
-  void dfsCycle(int u, int p, int *color, unsigned *mark, int *par,
-                unsigned &cycle_number);
-  int countNodes(int n, int p, const set<int> &vertices_in_cycle);
-
- public:
-  Graph(int V, int edges_count, int index = 1);
-  ~Graph();
-  void addEdge(int v, int w);
-  bool findTreesIfCorona(int &trees_count, set<int> &tree_sizes);
-};
-
-(*SML*)
-structure Graph = struct
-  val vertices_count
-  val edges_count
-  val index
-  val Array.adj_lists(1000000,0);
-  fun dfsCycle(int u, int p, int *color, unsigned *mark, int *par,
-                unsigned &cycle_number)
-  fun countNodes(int n, int p, const set<int> &vertices_in_cycle)
-
-  datatype vertex = V of (vertex*int) list ref
-  type edge = vertex*vertex*int
-  type graph = vertex list
-
-  fun eq(V(v1), V(v2)) = (v1 = v2)
-  fun vertices(g) = g
-  fun edgeinfo(e) = e
-  fun outgoing(V(lr)) = map (fn(dst,w) => (V(lr), dst, w)) (!lr)
-
-  fun add_vertex(g: graph): graph*vertex =
-    let val v = V(ref [])
-    in (v::g, v) end
-
-  fun add_edge(src: vertex, dst: vertex, weight: int) =
-    case src of V(lr) => lr := (dst,weight)::(!lr)
-end
-inStream *)
-
-
-fun add_edges u w graph =
-    let
-        val first = Array.sub(graph, u);
-        val second = Array.sub(graph, w)
-    in
-        Array.update(graph, u, first @ [w]);
-        Array.update(graph, w, second @ [u])
-    end
+fun dfs_cycle vertices graph =
+let
+	val color = Array.array(vertices, 0);
+	val mark = Array.array(vertices, 0);
+	val par = Array.array(vertices, 0);
+  
+	val cycle_number = ref 0;
+	val a = ref 0;
+	
+	fun dfs_aux u p graph = 
+		if (Array.sub(color,u) = 2) then () else
+		(
+			
+			(* FIXME: Start *)
+			print("Debug#0: u:" ^ Int.toString(u)^" p:"^ Int.toString(p) ^" ");
+			print_list_other_malakia ((Array.toList(mark)));
+			(* FIXME: End *)
+			
+			if(Array.sub(color,u) = 1) then
+			(
+				
+				(* FIXME: Start *)
+				print("--Debug#1: ");
+				print_list_other_malakia ((Array.toList(mark)));
+				(* FIXME: End *)
+				
+				cycle_number := !cycle_number + 1;
+				Array.update(mark, p, !cycle_number);
+		
+				(* FIXME: Start *)
+				print("----Debug#2: ");
+				print_list_other_malakia ((Array.toList(mark)));
+				(* FIXME: End *)
+		
+				let 
+					val cur = ref p;
+				in
+				(
+					let
+						fun whileloop cur u =
+							if (!cur <> u) then
+								(
+									cur := Array.sub(par, !cur);
+									Array.update(mark, !cur, !cycle_number);
+									whileloop cur u
+								)
+							else ()
+					in
+						whileloop cur u
+					end
+				)
+				end;
+				(* FIXME: Start *)
+				print("------Debug#3: ");
+				print_list_other_malakia ((Array.toList(mark)));
+				(* FIXME: End *)
+				()
+			)
+			else
+			(
+				
+				(* FIXME: Start *)
+				print("--------Debug#4: ");
+				print_list_other_malakia ((Array.toList(mark)));
+				(* FIXME: End *)
+				
+				Array.update(par, u, p);
+				Array.update(color, u, 1);
+				
+				let
+					val adj_list = Array.sub(graph, u);
+					fun iterate_neighbors nil = ()
+						| iterate_neighbors (neighbor::neighbors) = 
+							if (u = Array.sub(par, u)) then iterate_neighbors neighbors
+							else
+								(
+									(* FIXME: Start *)
+									print("---------Debug#4i: v: " ^ Int.toString(neighbor) ^ " ");
+									print_list_other_malakia ((Array.toList(mark)));
+									(* FIXME: End *)
+									dfs_aux neighbor u graph;
+									iterate_neighbors neighbors
+								)
+				in
+					iterate_neighbors adj_list
+				end
+			);
+							Array.update(color, u, 2);
+				(* FIXME: Start *)
+				print("----------Debug#5: ");
+				print_list_other_malakia ((Array.toList(mark)));
+				(* FIXME: End *)
+			()
+		);
+		
+in
+	print("============DFS============\n");
+	dfs_aux 1 0 graph;
+	print("===========================\n");
+	(cycle_number, color, mark)
+end;
