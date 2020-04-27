@@ -1,3 +1,5 @@
+
+
 /**************************************************************************
 Project     : Programming Languages 1 - Assignment 1 - Exercise 2
 Author(s)   : Ioannis Michail Kazelidis (gkazel@outlook.com)
@@ -164,54 +166,27 @@ Author: Striver
 Link: https://www.geeksforgeeks.org/print-all-the-cycles-in-an-undirected-graph/
 */
 void Graph::dfsCycle(int u, int p, unsigned &cycle_number) {
+  if (cycle_number >= 2) return;
+
   // already (completely) visited vertex.
   if (color[u] == 2) {
     return;
   }
-  // FIXME: Start
-  printf("Debug#0: u:%d p:%d ", u, p);
-  for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
-  printf("\n");
-  // FIXME: End
+
   // seen vertex, but was not completely visited -> cycle detected.
   // backtrack based on parents to find the complete cycle.
   if (color[u] == 1) {
-    // FIXME: Start
-    printf("--Debug#1: ");
-    for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
-    printf("\n");
-    // FIXME: End
     cycle_number++;
     int cur = p;
     mark[cur] = cycle_number;
-    // FIXME: Start
-    printf("----Debug#2: ");
-    for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
-    printf("\n");
-    // FIXME: End
     // backtrack the vertex which are
     // in the current cycle thats found
     while (cur != u) {
-      // FIXME: Start
-      printf("-----Debug#2i: cur: %d ", cur);
-      for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
-      printf("\n");
-      // FIXME: End
       cur = par[cur];
       mark[cur] = cycle_number;
     }
-    // FIXME: Start
-    printf("------Debug#3: ");
-    for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
-    printf("\n");
-    // FIXME: End
     return;
   }
-  // FIXME: Start
-  printf("---------Debug#4: ");
-  for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
-  printf("\n");
-  // FIXME: End
   par[u] = p;
 
   // partially visited.
@@ -223,21 +198,11 @@ void Graph::dfsCycle(int u, int p, unsigned &cycle_number) {
     if (v == par[u]) {
       continue;
     }
-    // FIXME: Start
-    printf("----------Debug#4i: v: %d ", v);
-    for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
-    printf("\n");
-    // FIXME: End
     dfsCycle(v, u, cycle_number);
   }
 
   // completely visited.
   color[u] = 2;
-  // FIXME: Start
-  printf("----------Debug#5: ");
-  for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
-  printf("\n");
-  // FIXME: End
 }
 
 bool Graph::findTreesIfCorona(int &trees_count, vector<int> &tree_sizes) {
@@ -266,16 +231,6 @@ bool Graph::findTreesIfCorona(int &trees_count, vector<int> &tree_sizes) {
       vertices_in_cycle.insert(i);
     }
   }
-
-  // FIXME:
-  printf("COLOR \n");
-  for (int i = 0; i < vertices_count; ++i) printf("%d", color[i]);
-  printf("\n");
-
-  printf("MARK \n");
-  for (int i = 0; i < vertices_count; ++i) printf("%d", mark[i]);
-  printf("\n");
-
   // count tree nodes...
   set<int>::iterator it;
   for (it = vertices_in_cycle.begin(); it != vertices_in_cycle.end(); ++it)

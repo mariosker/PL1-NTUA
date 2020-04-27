@@ -73,18 +73,18 @@ fun print_tree_list lst =
 	end;
 
 (* Runs dfs on the graph and returns
-cycle_number (if cycle_number != 1 then number is not correct) 
-visited nodes (to check for multiple graphs) 
+cycle_number (if cycle_number != 1 then number is not correct)
+visited nodes (to check for multiple graphs)
 and nodes in cycle *)
 fun dfs_cycle vertices graph =
 let
-	val visited = Array.array(vertices, 0); 
+	val visited = Array.array(vertices, 0);
 	val parent = Array.array(vertices, ~1);
-	val cycle = Array.array(vertices,0);  
+	val cycle = Array.array(vertices,0);
 
 	fun dfs_util v par graph =
 		if (Array.sub(visited, v) <> 0) then
-		(	
+		(
 			Array.update(visited, v, 2);
 			0
 		)
@@ -191,18 +191,18 @@ fun print_sorted_tree_sizes vertices_in_cycle graph =
 
 (* counts vertices in cycle and returns them along with the number of trees *)
 fun vertices_in_cycle 0 mark = (0, [])
-	| vertices_in_cycle index mark = 
+	| vertices_in_cycle index mark =
 	let
 		val (a,b) = vertices_in_cycle (index-1) mark
 	in
 		if (Array.sub(mark, index-1) = 1) then (a+1, b@[index-1])
 		else (a, b)
-	end; 
+	end;
 
 fun print_final_output mark vertices graph =
 	let
 		val (trees_in_cycle, trees) = vertices_in_cycle vertices mark
-	in	
+	in
 		print ("CORONA " ^ (Int.toString(trees_in_cycle)) ^ "\n");
 		print_sorted_tree_sizes trees graph
 	end;
@@ -227,7 +227,7 @@ fun parse file =
 					let
 					  val (cycle_number, color, mark) = dfs_cycle N graph
 					in
-						if( (Array.exists (fn x => x = 0) color) orelse (cycle_number <> 1) ) then print ("NO CORONA\n") 
+						if( (Array.exists (fn x => x = 0) color) orelse (cycle_number <> 1) ) then print ("NO CORONA\n")
 						else print_final_output mark N graph
 					end
 				end;
