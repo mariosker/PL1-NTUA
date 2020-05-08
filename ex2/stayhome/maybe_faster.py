@@ -9,6 +9,7 @@ School of ECE, National Technical University of Athens.
 '''
 
 import sys  # for parsing command line arguments
+import time
 
 
 class CoronaSpread:
@@ -24,34 +25,35 @@ class CoronaSpread:
     def create_map(self, file):
         for col, line in enumerate(file):
             map_row = []
+            map_row_append = map_row.append
             for row, character in enumerate(line):
                 #  acceptable characters: S', 'T', 'W', 'A', 'X', '.'
                 if character == "S":
                     self.traveler_coords = (col, row)
-                    map_row.append(-1)
+                    map_row_append(-1)
                     continue
 
                 elif character == "T":
                     self.destination_coords = (col, row)
-                    map_row.append(-1)
+                    map_row_append(-1)
                     continue
 
                 elif character == "W":
                     self.outbreak_starting_point = (col, row)
-                    map_row.append(0)
+                    map_row_append(0)
                     continue
 
                 elif character == "A":
                     self.airport_coords.append((col, row))
-                    map_row.append(-2)
+                    map_row_append(-2)
                     continue
 
                 elif character == "X":
-                    map_row.append('X')
+                    map_row_append('X')
                     continue
 
                 elif character == ".":
-                    map_row.append(-1)
+                    map_row_append(-1)
                     continue
             self.map.append(map_row)
             self.map_height = col
@@ -65,7 +67,7 @@ class CoronaSpread:
                 if (next_value < 0 or time < next_value):
                     if next_value == -2:
                         reached_airport = True
-                    queue.append((n, m, time))
+                    queue_append((n, m, time))
                     self.map[n][m] = time
 
         (x, y) = self.outbreak_starting_point
@@ -75,7 +77,7 @@ class CoronaSpread:
         spreaded_to_all_airports = False
 
         queue = [(x, y, time)]
-
+        queue_append = queue.append
         width = self.map_width
         height = self.map_height
 
@@ -86,7 +88,7 @@ class CoronaSpread:
                         next_airport = self.map[x][y]
                         if next_airport > time + 5 or next_airport < 0:
                             self.map[x][y] = time + 5
-                        queue.append((x, y, time + 5))
+                        queue_append((x, y, time + 5))
                     spreaded_to_all_airports = True
 
             (n, m, time) = queue.pop(0)
@@ -162,12 +164,22 @@ class CoronaSpread:
 
 def main(argv):
     filename = argv[1]
+
     corona = CoronaSpread()
     with open(filename, 'rt') as f:
         corona.create_map(f)
 
+    start_time = time.time()
     corona.flood_fill_map()
+    end_time = time.time()
+    time_taken = end_time - start_time
+    print("Flooding", time_taken)
+
+    start_time = time.time()
     corona.print_safe_path()
+    end_time = time.time()
+    time_taken = end_time - start_time
+    print("BFS", time_taken)
 
 
 if __name__ == "__main__":
