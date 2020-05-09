@@ -2,7 +2,7 @@
 Project     : Programming Languages 1 - Assignment 2 - Exercise 3
 Author(s)   : Ioannis Michail Kazelidis (gkazel@outlook.com)
               Marios Kerasiotis (marioskerasiotis@gmail.com)
-Date        : May 7, 2020.
+Date        : May 9, 2020.
 Description : Stayhome. (Python)
 -----------
 School of ECE, National Technical University of Athens.
@@ -13,7 +13,7 @@ import sys  # for parsing command line arguments
 
 class CoronaSpread:
     def __init__(self):
-        self.map = []
+        self.outbreak_map = []
         self.airport_coords = []
         self.traveler_coords = 0
         self.destination_coords = 0
@@ -22,51 +22,86 @@ class CoronaSpread:
         self.map_width = 0
 
     def create_map(self, file):
-        for col, line in enumerate(file):
-            map_row = []
-            for row, character in enumerate(line):
+        """creates map from a file. The map contains pathways, blocked pathways
+        and airports. Also the function saves where the traveller, the airports
+        , the destination and the outbreak initial point are.
+
+        Args:
+            file (file object): the file to be read
+        """
+        for n_coord, line in enumerate(file):
+            corona_line = []
+            for m_coord, character in enumerate(line):
                 #  acceptable characters: S', 'T', 'W', 'A', 'X', '.'
                 if character == "S":
-                    self.traveler_coords = (col, row)
-                    map_row.append(-1)
+                    self.traveler_coords = (n_coord, m_coord)
+                    corona_line.append(-1)
                     continue
 
-                elif character == "T":
-                    self.destination_coords = (col, row)
-                    map_row.append(-1)
+                if character == "T":
+                    self.destination_coords = (n_coord, m_coord)
+                    corona_line.append(-1)
                     continue
 
-                elif character == "W":
-                    self.outbreak_starting_point = (col, row)
-                    map_row.append(0)
+                if character == "W":
+                    self.outbreak_starting_point = (n_coord, m_coord)
+                    corona_line.append(0)
                     continue
 
-                elif character == "A":
-                    self.airport_coords.append((col, row))
-                    map_row.append(-2)
+                if character == "A":
+                    self.airport_coords.append((n_coord, m_coord))
+                    corona_line.append(-2)
                     continue
 
-                elif character == "X":
-                    map_row.append('X')
+                if character == "X":
+                    corona_line.append('X')
                     continue
 
-                elif character == ".":
-                    map_row.append(-1)
+                if character == ".":
+                    corona_line.append(-1)
                     continue
-            self.map.append(map_row)
-            self.map_height = col
-            self.map_width = row
+
+            self.outbreak_map.append(corona_line)
+            self.map_height = len(self.outbreak_map)
+            self.map_width = len(self.outbreak_map[0])
+        '''
+        def print_map(self):
+        """prints the map
+        """
+        print("    ", end=" ")
+        for i in range(self.map_width):
+            print("{:2}".format(str(i)), end=" ")
+
+        print("\n   ", end=" ")
+        for i in range(self.map_width):
+            print("___", end="")
+        print()
+
+        for k, line in enumerate(self.outbreak_map):
+            print("{:2} |".format(str(k)), end=" ")
+            for i in line:
+                print("{:>2}".format(str(i)), end=" ")
+            print()
+        '''
 
     def flood_fill_map(self):
+        """Based on the flood fill algorithm, the function fills the map with
+        the time required for the virus to reach a tile. The virus moves with
+        a step = 2 and if it reaches an airport then after 5 units of time it
+        is spread to all the other airports of the map.
+        We used the iterative algorithm written in the flood-fill wikipedia page
+        and modified it.
+        link:[https://en.wikipedia.org/wiki/Flood_fill#Alternative_implementations]
+        """
         def move(n, m):
             nonlocal reached_airport
-            if (self.map[n][m] != 'X'):
-                next_value = self.map[n][m]
+            if (self.outbreak_map[n][m] != 'X'):
+                next_value = self.outbreak_map[n][m]
                 if (next_value < 0 or time < next_value):
                     if next_value == -2:
                         reached_airport = True
                     queue.append((n, m, time))
-                    self.map[n][m] = time
+                    self.outbreak_map[n][m] = time
 
         (x, y) = self.outbreak_starting_point
         time = 0
@@ -83,14 +118,14 @@ class CoronaSpread:
             if not spreaded_to_all_airports:
                 if reached_airport:
                     for (x, y) in self.airport_coords:
-                        next_airport = self.map[x][y]
+                        next_airport = self.outbreak_map[x][y]
                         if next_airport > time + 5 or next_airport < 0:
-                            self.map[x][y] = time + 5
+                            self.outbreak_map[x][y] = time + 5
                         queue.append((x, y, time + 5))
                     spreaded_to_all_airports = True
 
             (n, m, time) = queue.pop(0)
-            curr_value = self.map[n][m]
+            curr_value = self.outbreak_map[n][m]
             time += 2
 
             # up
@@ -107,15 +142,20 @@ class CoronaSpread:
                 move(n, m - 1)
 
     def print_safe_path(self):
+        """Uses a bfs algorithm to find the shortest path to reach the
+        traveller's destination. We used the algorithm written in the
+        MITopencourses site and modified it.
+        link:[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/]
+        """
         queue = [self.traveler_coords]
         tile_time = {self.traveler_coords: 0}
         parent_tile = {self.traveler_coords: None}
         time = 1
 
         def move(x, y, time):
-            corona_arrival_time = self.map[x][y]
-            if corona_arrival_time != 'X':
-                if (x, y) not in tile_time and time < corona_arrival_time:
+            next_tile_data = self.outbreak_map[x][y]
+            if next_tile_data != 'X':
+                if (x, y) not in tile_time and time < next_tile_data:
                     tile_time[(x, y)] = time
                     parent_tile[(x, y)] = u
                     next.append((x, y))
@@ -163,9 +203,8 @@ class CoronaSpread:
 def main(argv):
     filename = argv[1]
     corona = CoronaSpread()
-    with open(filename, 'rt') as f:
+    with open(filename, 'r') as f:
         corona.create_map(f)
-
     corona.flood_fill_map()
     corona.print_safe_path()
 
