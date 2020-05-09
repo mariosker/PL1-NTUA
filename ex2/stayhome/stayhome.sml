@@ -8,30 +8,45 @@ Description : Stayhome. (SML)
 School of ECE, National Technical University of Athens.
 **************************************************************************)
 
+fun print_list lst =
+	let
+		fun print_aux nil = print "]\n"
+			| print_aux (h::[]) = (print (Char.toString(h)); print_aux [])
+			| print_aux (h::t) = (print (Char.toString(h)); print ","; print_aux t);
+	in
+		print "[";
+		print_aux lst
+	end;
 
-(*Input parse code by Stavros Aronis, modified by Nick Korasidis. *)
+fun print_double_list [] = ()
+ | print_double_list (h::t) =
+    (print_list h;
+    print_double_list t);
+
+
 fun parse file =
     let
-		(* Function to read an integer from an input stream *)
-        fun next_int input =
-	    	Option.valOf (TextIO.scanStream (Int.scan StringCvt.DEC) input)
-
-		(* Open input file. *)
-    	val inStream = TextIO.openIn file
-
-		(* Read an integer and consume newline. *)
-        val n = next_int inStream
-		val _ = TextIO.inputLine inStream
-
-		(* Function to read the pair of integer in subsequent lines *)
-        fun scanner 0 acc = acc
-          | scanner i acc =
+        val inStream = TextIO.openIn file;
+        fun readlines acc =
             let
-                val f = next_int inStream
-                val s = next_int inStream
+                val opt = TextIO.inputLine inStream
+                fun clean_list [] = []
+                    | clean_list [#"\n"] = []
+                    | clean_list (h::t) =
+                        h::clean_list t
             in
-                scanner (i - 1) ((f, s) :: acc)
-            end
+                if opt = NONE
+                then
+                    (rev acc)
+                else
+                    (readlines ((clean_list(explode (valOf opt)))::acc))
+            end;
+
+        val outbreak_map = readlines []
+        val width = length (hd outbreak_map)
+        val height = length outbreak_map
     in
-        (n,  rev(scanner n []))
-    end
+        (outbreak_map)
+    end;1
+
+print_double_list (parse "./tests-input/test1.txt");
