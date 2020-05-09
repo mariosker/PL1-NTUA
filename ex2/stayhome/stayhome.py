@@ -8,7 +8,7 @@ Description : Stayhome. (Python)
 School of ECE, National Technical University of Athens.
 '''
 
-import sys  # for parsing command line arguments
+import sys  # for parsing command line arsguments
 
 
 class CoronaSpread:
