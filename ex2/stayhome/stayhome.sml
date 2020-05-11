@@ -224,57 +224,121 @@ fun flood arr width height airport_coords outbreak =
         arr
     end
 
-
+(*
 (* Uses recursive bfs to find shortest rout *)
-fun bfs arr (tr_x, tr_y) (des_x, des_y) height width=
+fun bfs arr (tr_x, tr_y) (des_x, des_y) height width =
     let
-        val times = Array2.array((height + 1), (width + 1), ~1);
-        val _ = Array2.update(visited, tr_y, tr_x, true);
 
+        val q = Queue.mkQueue;
+
+        val times = Array2.array((height + 1), (width + 1), ~1);
+        val visited = Array2.array((height + 1), (width + 1), false);
         val parent = Array2.array((height + 1), (width + 1), (~1,~1));
 
+        fun whilequeue queue time =
+        (
+            let
+
+                if (Queue.isEmpty queue) then ()
+                else
+                (
+                    val (curr_x, curr_y) = Queue.dequeue queue;
+                    val curr_value = Array2.sub(arr, curr_y, curr_x);
+                    val next_queue = Queue.mkQueue();
+
+                    fun move_up =
+
+                        if (curr_y > 0) then
+                        (
+                            let
+                                val next_value = Array2.sub(arr, curr_y -1, curr_x)
+                            in
+                            (
+                                if (next_value <> ~3 andalso Array2.sub(times, curr_y -1, curr_x)  = 0 andalso time < next_value) then
+                                (
+                                    Queue.enqueue next_queue (curr_y -1, curr_x);
+                                    Array2.update(times, curr_y -1, curr_x, time);
+                                    Array2.update(parent, curr_y -1, curr_x, (curr_x, curr_y));
+                                )
+                                else ()
+                            )
+                            end
+                        )
+                        else ()
+
+
+
+            in
+
+                move_up;
+                whilequeue queue time;
+                whilequeue next_queue (time + 1)
+
+            end
+        )
+
+    in
+
+        Queue.enqueue((tr_x, tr_y));
+        Array2.update(visited, tr_y, tr_x, true);
+        whilequeue q 0
+
+    end
+*)
+fun bfs arr (tr_x, tr_y) (des_x, des_y) height width =
+    let
         val q = Queue.mkQueue();
 
+        val times = Array2.array((height + 1), (width + 1), ~1);
+        val visited = Array2.array((height + 1), (width + 1), false);
+        val parent = Array2.array((height + 1), (width + 1), (~1,~1));
+
         fun whilequeue queue time =
-        let
         (
             if (Queue.isEmpty queue) then ()
             else
             (
-                val (curr_x, curr_y) = Queue.dequeue queue;
-                val curr_value = Array2.sub(arr, curr_y, curr_x)
-                val next_queue = Queue.mkQueue();
+                let
+                    val (curr_x, curr_y) = Queue.dequeue queue
+                    val curr_value = Array2.sub(arr, curr_y, curr_x)
+                    val next_queue = Queue.mkQueue()
 
-                fun move_up =
-                (
-                    if (curr_y > 0) then
+                    fun move_up z =
                     (
-                        let
-                            val next_value = Array2.sub(arr, curr_y -1, curr_x)
-                        in
+                        if (curr_y > 0) then
                         (
-                            if (next_value <> ~3 andalso Array2.sub(times, curr_y -1, curr_x)  = 0 andalso time < next_value) then
+                            let
+                                val next_value = Array2.sub(arr, curr_y -1, curr_x)
+                            in
                             (
-                                Queue.enqueue next_queue (curr_y -1, curr_x);
-                                Array2.update(times, curr_y -1, curr_x, time);
-                                Array2.update(parent, curr_y -1, curr_x, (curr_x, curr_y))
+                                if (next_value <> ~3 andalso Array2.sub(times, curr_y -1, curr_x)  = 0 andalso time < next_value) then
+                                (
+                                    Queue.enqueue (next_queue, (curr_y -1, curr_x));
+                                    Array2.update(times, curr_y -1, curr_x, time);
+                                    Array2.update(parent, curr_y -1, curr_x, (curr_x, curr_y))
+                                )
+                                else ()
                             )
-                            else ()
+                            end
                         )
-                        end
+                        else ()
                     )
-                    else ()
-                )
+                in
+                    move_up 0;
+                    whilequeue queue time;
+                    whilequeue next_queue (time + 1)
+                end
             )
         )
-        in
-            move_up;
-            whilequeue queue time;
-            whilequeue next_queue (time + 1)
-        end
+
+
     in
-        bfs_aux whilequeue q
-    end
+        Queue.enqueue(q, (tr_x, tr_y));
+        Array2.update(visited, tr_y, tr_x, true);
+
+        whilequeue q 0
+    end;
+
 
 (* main program *)
 fun stayhome filename =
@@ -285,6 +349,10 @@ fun stayhome filename =
         (* DEBUG: *)
         (* val _ = print("\nMAP AFTER FLOODING\n");
         val _ = print_d_array_int (outbreak_map) *)
+
+        val _ = bfs outbreak_map traveler destination (map_height-1) (map_width-1)
+
+
     in
         print("\nSOTOS: ");
         print_coordsln traveler;
