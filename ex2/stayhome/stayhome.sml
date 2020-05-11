@@ -26,6 +26,8 @@ fun print_coord_list [] = print("\n")
         (print_coords h;
         print_coord_list t);
 
+
+(* print char array array *)
 fun  print_d_array arr height width h =
     let
         val row = Array.sub(arr, h);
@@ -40,6 +42,7 @@ fun  print_d_array arr height width h =
         print_d_array arr height width (h+1))
     end
 
+(* prints int Array2 *)
 fun print_d_array_int arr =
 	let
 		val (dimy,dimx) =Array2.dimensions arr
@@ -56,6 +59,7 @@ fun print_d_array_int arr =
 		print_d_array_int_aux arr (dimy) (dimx) 0 0;
 		())
 	end
+
 
 (* returns a char array array *)
 fun parse file =
@@ -221,8 +225,56 @@ fun flood arr width height airport_coords outbreak =
     end
 
 
-(*  *)
+(* Uses recursive bfs to find shortest rout *)
+fun bfs arr (tr_x, tr_y) (des_x, des_y) height width=
+    let
+        val times = Array2.array((height + 1), (width + 1), ~1);
+        val _ = Array2.update(visited, tr_y, tr_x, true);
 
+        val parent = Array2.array((height + 1), (width + 1), (~1,~1));
+
+        val q = Queue.mkQueue();
+
+        fun whilequeue queue time =
+        let
+        (
+            if (Queue.isEmpty queue) then ()
+            else
+            (
+                val (curr_x, curr_y) = Queue.dequeue queue;
+                val curr_value = Array2.sub(arr, curr_y, curr_x)
+                val next_queue = Queue.mkQueue();
+
+                fun move_up =
+                (
+                    if (curr_y > 0) then
+                    (
+                        let
+                            val next_value = Array2.sub(arr, curr_y -1, curr_x)
+                        in
+                        (
+                            if (next_value <> ~3 andalso Array2.sub(times, curr_y -1, curr_x)  = 0 andalso time < next_value) then
+                            (
+                                Queue.enqueue next_queue (curr_y -1, curr_x);
+                                Array2.update(times, curr_y -1, curr_x, time);
+                                Array2.update(parent, curr_y -1, curr_x, (curr_x, curr_y))
+                            )
+                            else ()
+                        )
+                        end
+                    )
+                    else ()
+                )
+            )
+        )
+        in
+            move_up;
+            whilequeue queue time;
+            whilequeue next_queue (time + 1)
+        end
+    in
+        bfs_aux whilequeue q
+    end
 
 (* main program *)
 fun stayhome filename =
