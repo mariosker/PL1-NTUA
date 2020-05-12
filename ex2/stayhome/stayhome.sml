@@ -60,6 +60,22 @@ fun print_d_array_int arr =
 		())
 	end
 
+fun print_dim_array_int arr =
+	let
+		val (dimy,dimx) =Array2.dimensions arr
+		fun  print_dim_array_int_aux arr height width h w =
+			if h >= height then () else(
+				if w >= width then (
+					print("\n");
+					print_dim_array_int_aux arr height width (h+1) 0)
+				else(
+					print_coords (Array2.sub(arr,h,w));
+					print_dim_array_int_aux arr height width h (w+1))
+			)
+	in(
+		print_dim_array_int_aux arr (dimy) (dimx) 0 0;
+		())
+	end
 
 (* returns a char array array *)
 fun parse file =
@@ -224,82 +240,56 @@ fun flood arr width height airport_coords outbreak =
         arr
     end
 
-(*
-(* Uses recursive bfs to find shortest rout *)
 fun bfs arr (tr_x, tr_y) (des_x, des_y) height width =
     let
-
-        val q = Queue.mkQueue;
-
-        val times = Array2.array((height + 1), (width + 1), ~1);
-        val visited = Array2.array((height + 1), (width + 1), false);
-        val parent = Array2.array((height + 1), (width + 1), (~1,~1));
-
-        fun whilequeue queue time =
-        (
-            let
-
-                if (Queue.isEmpty queue) then ()
-                else
-                (
-                    val (curr_x, curr_y) = Queue.dequeue queue;
-                    val curr_value = Array2.sub(arr, curr_y, curr_x);
-                    val next_queue = Queue.mkQueue();
-
-                    fun move_up =
-
-                        if (curr_y > 0) then
-                        (
-                            let
-                                val next_value = Array2.sub(arr, curr_y -1, curr_x)
-                            in
-                            (
-                                if (next_value <> ~3 andalso Array2.sub(times, curr_y -1, curr_x)  = 0 andalso time < next_value) then
-                                (
-                                    Queue.enqueue next_queue (curr_y -1, curr_x);
-                                    Array2.update(times, curr_y -1, curr_x, time);
-                                    Array2.update(parent, curr_y -1, curr_x, (curr_x, curr_y));
-                                )
-                                else ()
-                            )
-                            end
-                        )
-                        else ()
-
-
-
-            in
-
-                move_up;
-                whilequeue queue time;
-                whilequeue next_queue (time + 1)
-
-            end
-        )
-
-    in
-
-        Queue.enqueue((tr_x, tr_y));
-        Array2.update(visited, tr_y, tr_x, true);
-        whilequeue q 0
-
-    end
-*)
-fun bfs arr (tr_x, tr_y) (des_x, des_y) height width =
-    let
+        val _= print("in bfs\n")
         val q = Queue.mkQueue();
 
         val times = Array2.array((height + 1), (width + 1), ~1);
-        val visited = Array2.array((height + 1), (width + 1), false);
         val parent = Array2.array((height + 1), (width + 1), (~1,~1));
 
-        fun whilequeue queue time =
+        val _ = Queue.enqueue(q, (tr_x, tr_y));
+
+        val found = ref false;
+
+        fun backtrack (in_x, in_y) =
+            if in_x = tr_x andalso in_y = tr_y then [] else
+                let
+                    val (d_x, d_y) = Array2.sub(parent, in_y, in_x)
+                in
+                    if (d_x = in_x) then
+                    (
+                        if (d_y > in_y) then
+                        (
+                            "U"::(backtrack (d_x, d_y))
+                        )
+                        else
+                        (
+                            "D"::(backtrack (d_x, d_y))
+                        )
+                    )
+                    else
+                    (
+                        if (d_x > in_x) then
+                        (
+                            "L"::(backtrack (d_x, d_y))
+                        )
+                        else
+                        (
+                            "R"::(backtrack (d_x, d_y))
+                        )
+                    )
+                end
+
+
+        fun whilequeue queue time=
         (
-            if (Queue.isEmpty queue) then ()
+            if (Queue.isEmpty queue orelse !found = true) then ()
             else
             (
                 let
                     val (curr_x, curr_y) = Queue.dequeue queue
+                    val _ = print("-->in while queue node: (" ^ Int.toString(curr_y) ^ ", " ^ Int.toString(curr_x) ^ ") with time = " ^ Int.toString(time) ^ "\n");
                     val curr_value = Array2.sub(arr, curr_y, curr_x)
                     val next_queue = Queue.mkQueue()
 
@@ -311,9 +301,10 @@ fun bfs arr (tr_x, tr_y) (des_x, des_y) height width =
                                 val next_value = Array2.sub(arr, curr_y -1, curr_x)
                             in
                             (
-                                if (next_value <> ~3 andalso Array2.sub(times, curr_y -1, curr_x)  = 0 andalso time < next_value) then
+                                print("-->-->in move_up\n");
+                                if (next_value <> ~3 andalso Array2.sub(times, curr_y -1, curr_x)  = ~1 andalso (time+1) < next_value) then
                                 (
-                                    Queue.enqueue (next_queue, (curr_y -1, curr_x));
+                                    Queue.enqueue (next_queue, (curr_x, curr_y -1));
                                     Array2.update(times, curr_y -1, curr_x, time);
                                     Array2.update(parent, curr_y -1, curr_x, (curr_x, curr_y))
                                 )
@@ -323,20 +314,99 @@ fun bfs arr (tr_x, tr_y) (des_x, des_y) height width =
                         )
                         else ()
                     )
+                    fun move_down z =
+                    (
+                        if (curr_y < height) then
+                        (
+                            let
+                                val next_value = Array2.sub(arr, curr_y +1, curr_x)
+                            in
+                            (
+                                print("-->-->in move_down\n");
+                                if (next_value <> ~3 andalso Array2.sub(times, curr_y +1, curr_x)  = ~1 andalso (time+1) < next_value) then
+                                (
+                                    Queue.enqueue (next_queue, (curr_x, curr_y +1));
+                                    Array2.update(times, curr_y +1, curr_x, time);
+                                    Array2.update(parent, curr_y +1, curr_x, (curr_x, curr_y))
+                                )
+                                else ()
+                            )
+                            end
+                        )
+                        else ()
+                    )
+                    fun move_left z =
+                    (
+                        if (curr_x > 0) then
+                        (
+                            let
+                                val next_value = Array2.sub(arr, curr_y, curr_x - 1)
+                            in
+                            (
+                                print("-->-->in move_left\n");
+                                if (next_value <> ~3 andalso Array2.sub(times, curr_y, curr_x - 1)  = ~1 andalso (time+1) < next_value) then
+                                (
+                                    Queue.enqueue (next_queue, (curr_x - 1, curr_y));
+                                    Array2.update(times, curr_y, curr_x, time - 1);
+                                    Array2.update(parent, curr_y, curr_x - 1, (curr_x, curr_y))
+                                )
+                                else ()
+                            )
+                            end
+                        )
+                        else ()
+                    )
+                    fun move_right z =
+                    (
+                        if (curr_x < width) then
+                        (
+                            let
+                                val next_value = Array2.sub(arr, curr_y, curr_x + 1)
+                            in
+                            (
+                                print("-->-->in move_right\n");
+                                if (next_value <> ~3 andalso Array2.sub(times, curr_y, curr_x + 1)  = ~1 andalso (time + 1) < next_value) then
+                                (
+                                    Queue.enqueue (next_queue, ( curr_x + 1, curr_y));
+                                    Array2.update(times, curr_y, curr_x + 1, time);
+                                    Array2.update(parent, curr_y, curr_x + 1, (curr_x, curr_y))
+                                )
+                                else ()
+                            )
+                            end
+                        )
+                        else ()
+                    )
+
+                    val _ = move_down 0;
+                    val _ = move_left 0;
+                    val _ = move_right 0;
+                    val _ = move_up 0;
+                    val _ = print("-->Current queue has length: " ^ Int.toString(Queue.length queue) ^ "\n")
+                    val _ = whilequeue queue time;
+                    val _ = print("-->Next queue has length: " ^ Int.toString(Queue.length next_queue) ^ "\n")
                 in
-                    move_up 0;
-                    whilequeue queue time;
-                    whilequeue next_queue (time + 1)
+                    if curr_x = des_x andalso curr_y = des_y then
+                    (
+                        found := true;
+                        (* print_dim_array_int parent; *)
+                        print ("****************done\n");
+                        print((Int.toString (Array2.sub(times, des_y, des_x) + 1)) ^ "\n");
+                        print((String.concat (rev (backtrack (des_x, des_y)))) ^ "\n")
+                    )
+                    else
+                    (
+                        print("++>Next queue has length: " ^ Int.toString(Queue.length next_queue) ^ "\n");
+                        whilequeue next_queue (time + 1)
+                    )
                 end
             )
         )
-
-
     in
-        Queue.enqueue(q, (tr_x, tr_y));
-        Array2.update(visited, tr_y, tr_x, true);
-
-        whilequeue q 0
+        whilequeue q 0;
+        if !found = false then
+            print("IMPOSSIBLE\n")
+        else ()
     end;
 
 
@@ -346,25 +416,11 @@ fun stayhome filename =
         val (outbreak_map, map_width, map_height) = parse filename
         val (outbreak_map, traveler, destination, outbreak, airport_coords) = map_data outbreak_map (map_width-1) (map_height-1)
         val outbreak_map =  flood outbreak_map (map_width-1) (map_height-1) airport_coords outbreak
-        (* DEBUG: *)
-        (* val _ = print("\nMAP AFTER FLOODING\n");
-        val _ = print_d_array_int (outbreak_map) *)
-
-        val _ = bfs outbreak_map traveler destination (map_height-1) (map_width-1)
-
-
     in
-        print("\nSOTOS: ");
-        print_coordsln traveler;
-        print("HOME: ");
-        print_coordsln destination;
-		print("OUTBREAK: ");
-        print_coordsln outbreak;
-		print("AIRPORTS: ");
-        print_coord_list airport_coords
-
+        bfs outbreak_map traveler destination (map_height-1) (map_width-1)
     end;
 
 (* stayhome "./tests-input/test1.txt"; *)
-stayhome "./tests-input/test2.txt";
+(* stayhome "./tests-input/test2.txt"; *)
 (* stayhome "./tests-input/test3.txt"; *)
+stayhome "./tests-input/bigtest.txt";
