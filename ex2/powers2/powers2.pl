@@ -73,13 +73,17 @@ count([H|T], N) :-
     ;   N is X
     ).
 
-
-find_powers([],B).
-find_powers(Binary_List, K, Result) :-
-    count(Binary_List, Kcomp),
-    Ones_Needed is K - Kcomp,
-    reverse(Binary_List, Reversed_List),
-
+% pow2(X, Y, Z) :-
+%     Z is X**Y.
+% FIXME:
+% find_powers([],B).
+% find_powers(Binary_List, K, Result) :-
+%     count(Binary_List, Kcomp),
+%     Ones_Needed is K - Kcomp,
+%     reverse(Binary_List, Reversed_List),
+%     (nth0(0,Reversed_List,1)
+%     -> pow2(2,0,Z)
+%     ).
 
 
 
@@ -115,15 +119,8 @@ find_powers(Binary_List, K, Result) :-
 % sol(N, K, W) :-
 %     length(W, K),
 %     sum(W, N).
-
-
 listwithmostpowers(N, W) :-
-    N == 0 -> W = [];
-    N == 1 -> W = [1];
-    nearest_power(N, P),
-    NewN is N - P,
-    listwithmostpowers(NewN, NewW),
-    W = P | NewW.
+    N==0->W=[];N==1->W=[1];nearest_power(N, P), NewN is N-P, listwithmostpowers(NewN, NewW), W=P| NewW.
 
 nearest_power(0, 0).
 nearest_power(N, W) :-
