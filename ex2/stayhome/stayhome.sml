@@ -281,7 +281,7 @@ fun bfs arr (tr_x, tr_y) (des_x, des_y) height width =
                     )
                 end
 
-
+        (* main bfs function *)
         fun bfs_aux queue time =
         let
             fun whilequeue queue next_queue time =
@@ -399,22 +399,6 @@ fun bfs arr (tr_x, tr_y) (des_x, des_y) height width =
                 print("IMPOSSIBLE\n")
         else ()
     end
-
-(*
-1 procedure BFS(G, start_v) is
-2 let Q be a queue
-3 label start_v as discovered
-4 Q.enqueue(start_v)
-5 while Q is not empty do
-6 v := Q.dequeue()
-7 if v is the goal then
-8 return v
-9 for all edges from v to w in G.adjacentEdges(v) do
-10 if w is not labeled as discovered then
-11 label w as discovered
-12 w.parent := v
-13 Q.enqueue( w)
-*)
 
 
 (* main program *)
