@@ -8,7 +8,6 @@ Description : Powers of 2. (C++)
 School of ECE, National Technical University of Athens.
 **************************************************************************/
 
-
 #include <cmath>
 #include <fstream>
 #include <vector>
