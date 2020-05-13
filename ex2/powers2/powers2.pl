@@ -46,7 +46,68 @@ proccess_tests([[N, K]|T], A) :-
 solution(N, K, A) :-
     (   K=:=0
     ->  A=[]
-    ;   writeln(N),
-        writeln(K),
-        writeln(A)
+    ;   dec_bin(N, Nbin),
+        count(Nbin, Kcomp),
+        Kcomp>K
+    ->  A=[]
+    ;   Kcomp=:=K
+    ->  A is Nbin
     ).
+
+% from stackoverflow [https://stackoverflow.com/questions/13864414/how-to-convert-decimal-to-binary-number-in-prolog]
+dec_bin(0, [0]).
+dec_bin(1, [1]).
+dec_bin(N, B) :-
+    N>1,
+    X is N mod 2,
+    Y is N//2,
+    dec_bin(Y, B1),
+    append([X], B1, B).
+
+% from stackoverflow [https://stackoverflow.com/questions/46902653/prolog-how-to-count-the-number-of-elements-in-a-list-that-satisfy-a-specific-c?rq=1]
+count([], 0).
+count([H|T], N) :-
+    count(T, X),
+    (   H=:=1
+    ->  N is X+1
+    ;   N is X
+    ).
+
+next_two([], _, []).
+next_two([0|T], false, A) :-
+    next_two(T, false, A).
+next_two([0|T], true, A) :-
+    next_two(T, true, Anew),
+    A=[0|Anew].
+next_two([1|T], false, A) :-
+    next_two(T, true, Anew),
+    A=[1|Anew].
+next_two([1|T], true, A) :-
+    next_two(T, true, Anew),
+    A=[0|Anew].
+
+
+
+/*
+101010
+[10,
+1000,
+100000]
+
+1: 3 not 6
+
+10
+    1
+    1
+
+1: 4 not 6
+
+1000
+    100
+        10
+        10
+    100
+
+1: 6 not 6
+
+*/
