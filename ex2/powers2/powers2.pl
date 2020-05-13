@@ -73,41 +73,59 @@ count([H|T], N) :-
     ;   N is X
     ).
 
-next_two([], _, []).
-next_two([0|T], false, A) :-
-    next_two(T, false, A).
-next_two([0|T], true, A) :-
-    next_two(T, true, Anew),
-    A=[0|Anew].
-next_two([1|T], false, A) :-
-    next_two(T, true, Anew),
-    A=[1|Anew].
-next_two([1|T], true, A) :-
-    next_two(T, true, Anew),
-    A=[0|Anew].
+
+find_powers([],B).
+find_powers(Binary_List, K, Result) :-
+    count(Binary_List, Kcomp),
+    Ones_Needed is K - Kcomp,
+    reverse(Binary_List, Reversed_List),
 
 
 
-/*
-101010
-[10,
-1000,
-100000]
 
-1: 3 not 6
+% next_two([], _, []).
+% next_two([0|T], false, A) :-
+%     next_two(T, false, A).
+% next_two([0|T], true, A) :-
+%     next_two(T, true, Anew),
+%     A=[0|Anew].
+% next_two([1|T], false, A) :-
+%     next_two(T, true, Anew),
+%     A=[1|Anew].
+% next_two([1|T], true, A) :-
+%     next_two(T, true, Anew),
+%     A=[0|Anew].]
 
-10
-    1
-    1
 
-1: 4 not 6
 
-1000
-    100
-        10
-        10
-    100
+% sum([], 0).
+% sum([H|T], N) :-
+%     sum(T, X),
+%     N is X+H.
 
-1: 6 not 6
+% is_power2([], true).
+% is_power2([H|T], B) :-
+%     ModH is log10(H)/log10(2),
+%     (   integer(ModH)==true
+%     ->  is_power2(T, Y),
+%         B=Y
+%     ;   B=false
+%     ).
 
-*/
+% sol(N, K, W) :-
+%     length(W, K),
+%     sum(W, N).
+
+
+listwithmostpowers(N, W) :-
+    N == 0 -> W = [];
+    N == 1 -> W = [1];
+    nearest_power(N, P),
+    NewN is N - P,
+    listwithmostpowers(NewN, NewW),
+    W = P | NewW.
+
+nearest_power(0, 0).
+nearest_power(N, W) :-
+    Wnew is 2**floor(log10(N)/log10(2)),
+    W=Wnew.
