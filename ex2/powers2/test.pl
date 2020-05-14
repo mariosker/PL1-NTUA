@@ -1,41 +1,69 @@
 listwithmostpowers(N, W) :-
-    (   N=:=0
-    ->  W=[]
-    ;   N=:=1
-    ->  W=[1]
-    ;   nearest_power(N, P),
-        NewN is N-P,
-        listwithmostpowers(NewN, NewW),
-        append(NewW, [P], W)
-    ).
+	(   N=:=0
+	->  W=[]
+	;   N=:=1
+	->  W=[1]
+	;   nearest_power(N, P),
+		NewN is N-P,
+		listwithmostpowers(NewN, NewW),
+		append(NewW, [P], W)
+	).
 
 nearest_power(0, 0).
 nearest_power(1, 1).
 nearest_power(N, W) :-
-    Wnew is 2**floor(log10(N)/log10(2)),
-    W=Wnew.
+	Wnew is 2**floor(log10(N)/log10(2)),
+	W=Wnew.
 
-sol(N, K, W) :-
-    (   listwithmostpowers(N, Y),
-        writeln(Y),
-        length(Y, LengthY),
-        LengthY>K
-    ->  W=[]
-    ;   LengthY=K
-    ->  W=Y
-    ;   knew(N, K, LengthY, Y, W)
-    ).
+solu(N, K, W) :-
+	listwithmostpowers(N, Y),
+	length(Y, LengthY),
+	sol(K, LengthY, Y, W).
 
-knew(N, K, Length, [H|T], R) :-
-    K=:=Length->R=[H|T];H=:=1->knew(N, K, Length, T, Y), R;listwithmostpowers(H, P), NewP=P/2, knew(N, K, Length+1,  ([NewP]| [NewP]| T), Y), R=[NewP]| [NewP]| R.
+sol(K, K, Y, W) :-
+	W=Y.
+sol(K, L, Y, W) :-
+	(   L<K
+	->  changeList(K, Y, L, W)
+	;   W=[]
+	).
 
+changeList(K, Y, L, W) :-
+	make_list(K, Y, L, LSD),
+	NewK is K-1,
+	forup(0, NewK, LSD, LSP),
+	W=LSP.
 
-/*
-[2,8,32]
+produce_list([1|T], NewList) :-
+	produce_list(T, NList),
+	append([1], NList, NewList).
+produce_list([H|T], NewList) :-
+	NewH is H/2,
+	append([NewH, NewH], T, NewList).
 
-[1,1]::[8,32]
-[1,1]::[4,4]::[32]
-[1,1]::[2,2]::[4]::[32]
+make_list(K, List, K, NewList) :-
+	NewList=List.
+make_list(K, List, ListLength, NewList) :-
+	produce_list(List, BetterList),
+	NewLength is ListLength+1,
+	make_list(K, BetterList, NewLength, NewList).
 
-[1,1,2,2,4,32]
-*/
+forup(N, K, List, ResList) :-
+	(   N>K
+	->  ResList=[]
+	;   Target is 2**N,
+		count(Target, List, Res, CountResList),
+		NewN is N+1,
+		forup(NewN, K, CountResList, NewResList),
+		append([Res], NewResList, ResList)
+	).
+
+count(_, [], 0, []).
+count(N, [H|T], Res, TList) :-
+	(   H==N
+	->  count(N, T, NRes, TList),
+		Res is NRes+1
+	;   H>N
+	->  TList=[H|T],
+		Res=0
+	).
