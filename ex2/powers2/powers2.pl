@@ -32,16 +32,19 @@ read_lines(Stream, N, Lines) :-
 		Lines=[Line|RestLines]
 	).
 
+% main part of program
 powers2(File, Answers) :-
 	read_input(File, _, Tests),
 	proccess_tests(Tests, Answers).
 
+% runs all tuples- tests and appends their solution to a list for output
 proccess_tests([], []).
 proccess_tests([[N, K]|T], A) :-
 	proccess_tests(T, RestAns),
 	solu(N, K, Ans),
 	A=[Ans|RestAns], !.
 
+% creates a list with sum = number and elements are the biggest powers of the number
 listwithmostpowers(N, W) :-
 	(   N=:=0
 	->  W=[]
@@ -53,17 +56,20 @@ listwithmostpowers(N, W) :-
 		append(NewW, [P], W)
 	).
 
+% gets a number and returns the biggest power of 2
 nearest_power(0, 0).
 nearest_power(1, 1).
 nearest_power(N, W) :-
 	Wnew is 2**floor(log10(N)/log10(2)),
 	W=Wnew.
 
+% called by proccess_tests, handles the tuple- test and return the solution
 solu(N, K, W) :-
 	listwithmostpowers(N, Y),
 	length(Y, LengthY),
 	sol(K, LengthY, Y, W).
 
+% checks if it is possible to get a solution and proccesses the list of biggest powers and returns the correct list
 sol(K, L, Y, W) :-
 	(   L<K
 	->  changeList(K, Y, L, W)
@@ -74,12 +80,14 @@ sol(K, L, Y, W) :-
 	;   W=[]
 	).
 
+% changes the list to the acceptable output
 changeList(K, Y, L, W) :-
 	make_list(K, L, Y, _, LSD),
 	last(LSD, LastElement),
 	NewK is log10(LastElement)/log10(2),
 	forup(0, NewK, LSD, W).
 
+% the same with changeList
 forup(N, K, List, ResList) :-
 	(   N>K
 	->  ResList=[]
@@ -90,6 +98,7 @@ forup(N, K, List, ResList) :-
 		append([Res], NewResList, ResList)
 	).
 
+% counts the number of appearances of a number in the list
 count(_, [], 0, []).
 count(N, [H|T], Res, TList) :-
 	(   H==N
@@ -100,6 +109,7 @@ count(N, [H|T], Res, TList) :-
 		Res=0
 	).
 
+% makes the list longer if needed but keeps it lexigocraphically smallest.
 make_list(_, ListLength, [], NewListLength, []) :-
 	NewListLength=ListLength.
 make_list(K, K, In, _, Out) :-
