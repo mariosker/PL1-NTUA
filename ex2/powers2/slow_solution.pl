@@ -2,7 +2,7 @@
 Project     : Programming Languages 1 - Assignment 2 - Exercise 1
 Author(s)   : Ioannis Michail Kazelidis (gkazel@outlook.com)
               Marios Kerasiotis (marioskerasiotis@gmail.com)
-Date        : May 14, 2020.
+Date        : May 13, 2020.
 Description : Powers2. (Prolog)
 -----------
 School of ECE, National Technical University of Athens.
@@ -75,11 +75,26 @@ sol(K, L, Y, W) :-
 	).
 
 changeList(K, Y, L, W) :-
-	make_list(K, L, Y, _, LSD),
+	make_list(K, Y, L, LSD),
 	last(LSD, LastElement),
 	NewK is log10(LastElement)/log10(2),
 	forup(0, NewK, LSD, W).
 
+make_list(K, List, K, NewList) :-
+	NewList=List.
+make_list(K, List, ListLength, NewList) :-
+	produce_list(List, BetterList),
+	NewLength is ListLength+1,
+	make_list(K, BetterList, NewLength, NewList).
+
+produce_list([1|T], NewList) :-
+	produce_list(T, NList),
+	append([1], NList, NewList).
+produce_list([H|T], NewList) :-
+	NewH is H/2,
+	append([NewH, NewH], T, NewList).
+
+% forup(_, _, [], []).
 forup(N, K, List, ResList) :-
 	(   N>K
 	->  ResList=[]
@@ -98,30 +113,4 @@ count(N, [H|T], Res, TList) :-
 	;   H>N
 	->  TList=[H|T],
 		Res=0
-	).
-
-make_list(_, ListLength, [], NewListLength, []) :-
-	NewListLength=ListLength.
-make_list(K, K, In, _, Out) :-
-	Out=In.
-make_list(K, ListLength, [H|T], NewListLength, Out) :-
-	(   H=:=1
-	->  make_list(K, ListLength, T, NewListLength, NOut),
-		append([1], NOut, Out)
-	;   NewH is H/2,
-		NListLength is ListLength+1,
-		make_list(K, NListLength, [NewH], NNListLength, NOut),
-		make_list(K,
-						  NNListLength,
-						  [NewH],
-						  NNNListLength,
-						  NNOut),
-		make_list(K,
-						  NNNListLength,
-						  T,
-						  NNNNListLength,
-						  NNNOut),
-		NewListLength=NNNNListLength,
-		append(NOut, NNOut, SomeOut),
-		append(SomeOut, NNNOut, Out)
 	).
