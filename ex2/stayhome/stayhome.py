@@ -64,8 +64,8 @@ class CoronaSpread:
             self.outbreak_map.append(corona_line)
             self.map_height = len(self.outbreak_map)
             self.map_width = len(self.outbreak_map[0])
-        '''
-        def print_map(self):
+
+    def print_map(self):
         """prints the map
         """
         print("    ", end=" ")
@@ -82,7 +82,6 @@ class CoronaSpread:
             for i in line:
                 print("{:>2}".format(str(i)), end=" ")
             print()
-        '''
 
     def flood_fill_map(self):
         """Based on the flood fill algorithm, the function fills the map with
@@ -206,6 +205,7 @@ def main(argv):
     with open(filename, 'r') as f:
         corona.create_map(f)
     corona.flood_fill_map()
+    corona.print_map()
     corona.print_safe_path()
 
 
