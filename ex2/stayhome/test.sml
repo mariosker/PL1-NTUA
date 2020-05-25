@@ -283,7 +283,7 @@ in
     whilequeue 0;
     arr
 end
-(*
+
 fun bfs arr (tr_x, tr_y) (des_x, des_y) height width =
 let
     val q = Queue.mkQueue();
@@ -341,8 +341,9 @@ let
                                 val next_value = Array2.sub(arr, cur_y +1, cur_x)
                             in
                             (
-                                if (next_value <> ~3 andalso Array2.sub(times, cur_y +1, cur_x)  = ~1 andalso (time) < next_value) then
+                                if (next_value <> ~3 andalso (Array2.sub(times, cur_y +1, cur_x)  = ~1 orelse Array2.sub(times, cur_y + 1, cur_x) > time) andalso (time) < next_value) then
                                 (
+                                    if time = 37 then print("down\n") else ();
                                     Queue.enqueue (next_queue, (cur_x, cur_y +1));
                                     Array2.update(times, cur_y +1, cur_x, time);
                                     Array2.update(parent, cur_y +1, cur_x, (cur_x, cur_y))
@@ -362,7 +363,7 @@ let
                                 val next_value = Array2.sub(arr, cur_y, cur_x - 1)
                             in
                             (
-                                if (next_value <> ~3 andalso Array2.sub(times, cur_y, cur_x - 1)  = ~1 andalso (time) < next_value) then
+                                if (next_value <> ~3 andalso (Array2.sub(times, cur_y, cur_x - 1)  = ~1 orelse Array2.sub(times, cur_y, cur_x - 1) > time) andalso (time) < next_value) then
                                 (
                                     Queue.enqueue (next_queue, (cur_x - 1, cur_y));
                                     Array2.update(times, cur_y, cur_x, time - 1);
@@ -383,7 +384,7 @@ let
                                 val next_value = Array2.sub(arr, cur_y, cur_x + 1)
                             in
                             (
-                                if (next_value <> ~3 andalso Array2.sub(times, cur_y, cur_x + 1)  = ~1 andalso (time) < next_value) then
+                                if (next_value <> ~3 andalso (Array2.sub(times, cur_y, cur_x + 1)  = ~1 orelse Array2.sub(times, cur_y, cur_x + 1) > time) andalso (time) < next_value) then
                                 (
                                     Queue.enqueue (next_queue, (cur_x + 1, cur_y));
                                     Array2.update(times, cur_y, cur_x + 1, time);
@@ -404,7 +405,7 @@ let
                                 val next_value = Array2.sub(arr, cur_y -1, cur_x)
                             in
                             (
-                                if (next_value <> ~3 andalso Array2.sub(times, cur_y -1, cur_x)  = ~1 andalso (time) < next_value) then
+                                if (next_value <> ~3 andalso (Array2.sub(times, cur_y -1, cur_x)  = ~1 orelse Array2.sub(times, cur_y - 1, cur_x) > time) andalso (time) < next_value) then
                                 (
                                     Queue.enqueue (next_queue, (cur_x, cur_y -1));
                                     Array2.update(times, cur_y -1, cur_x, time);
@@ -431,6 +432,10 @@ let
         if (Queue.isEmpty queue) = true then ()
         else(
             iteratequeue queue;
+            (* print("-------------------------------------------------------------------------------------------------------------------------------\n");
+            print_d_array_int times;
+            print("-------------------------------------------------------------------------------------------------------------------------------\n");
+            TextIO.inputLine TextIO.stdIn; *)
             whilequeue next_queue (time + 1)
         )
     end
@@ -439,12 +444,13 @@ in
     if (Array2.sub(parent, des_y, des_x)) = (~1, ~1) then
         print("IMPOSSIBLE\n")
     else (
+        (* print_d_array_int times; *)
         print(Int.toString(Array2.sub(times, des_y, des_x)) ^ "\n");
         print((String.concat (rev (backtrack (des_x, des_y)))) ^ "\n")
     )
-end *)
+end
 
-
+(*
 fun bfs arr (tr_x, tr_y) (des_x, des_y) height width =
     let
         val q = Queue.mkQueue();
@@ -606,28 +612,21 @@ fun bfs arr (tr_x, tr_y) (des_x, des_y) height width =
                 print("IMPOSSIBLE\n")
         else ()
     end
-
+ *)
 
 (* main program *)
 fun stayhome filename =
     let
         val (outbreak_map, map_width, map_height) = parse filename
-        val _ = print("Map created\n")
         val (outbreak_map, traveler, destination, outbreak, airport_coords) = map_data outbreak_map (map_width-1) (map_height-1)
-        val _ = print_coordsln outbreak;
-        (* val _ = print("mapmap\n")
-        val _ = print_d_array_int outbreak_map
-        val _ = print("mapmap\n") *)
         val outbreak_map =  flood outbreak_map (map_width-1) (map_height-1) airport_coords outbreak
-        (* val _ = print("Flood done\n")
-        val _ = print_d_array_int outbreak_map
-        val _ = print("Flood done\n") *)
     in
         bfs outbreak_map traveler destination (map_height-1) (map_width-1)
     end;
 
-(* stayhome "./testcases/stayhome.in1";
-stayhome "./tests-input/test2.txt";
-stayhome "./tests-input/test3.txt"; *)
+(* stayhome "./testcases/stayhome.in1"; *)
+(* stayhome "./tests-input/test2.txt"; *)
+(* stayhome "./tests-input/test3.txt"; *)
 stayhome "./testcases/stayhome.in4";
+(* stayhome "./testcases/stayhome.in10"; *)
 (* stayhome "./tests-input/bigtest.txt"; *)
