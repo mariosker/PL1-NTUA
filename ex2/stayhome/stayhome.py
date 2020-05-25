@@ -163,6 +163,7 @@ class CoronaSpread:
             next = []
             for u in queue:
                 (n, m) = u
+                print("Current:", u)
                 # down
                 if (n < self.map_height - 1):
                     move(n + 1, m, time)
@@ -205,7 +206,6 @@ def main(argv):
     with open(filename, 'r') as f:
         corona.create_map(f)
     corona.flood_fill_map()
-    corona.print_map()
     corona.print_safe_path()
 
 
