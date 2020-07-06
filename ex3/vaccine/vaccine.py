@@ -11,7 +11,7 @@ def main(argv):
         exit(2)
     filename = argv[1]
     try:
-        with open(filename, 'r') as fn:
+        with open(filename, 'rt') as fn:
             pass
     except Exception as e:
         print("Error opening file:", filename)
