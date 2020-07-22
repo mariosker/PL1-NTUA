@@ -2,10 +2,6 @@ import sys
 from collections import deque
 
 
-def debug(msg):
-    print('\033[93m' + 'DEBUG: ' + msg + '\033[0m')
-
-
 class rna_data:
     def __init__(self,
                  initial_rna_sequence,
@@ -20,12 +16,14 @@ class rna_data:
 
         if (final_rna_sequence == None):
             self.final_rna_sequence = deque()
-        else:
+        elif (type(final_rna_sequence) == str):
             self.final_rna_sequence = deque(final_rna_sequence)
+        else:
+            self.final_rna_sequence = final_rna_sequence
 
         self.correction = correction
         if (correction == None):
-            self.correction = 'non'
+            self.correction = 'n'
         elif (correction == 'p'):
             self.push()
         elif (correction == 'c'):
@@ -71,10 +69,10 @@ class rna_data:
         return True
 
     def get_initial_rna_sequence(self):
-        return "".join(self.initial_rna_sequence)
+        return self.initial_rna_sequence.copy()
 
     def get_final_rna_sequence(self):
-        return "".join(self.final_rna_sequence)
+        return self.final_rna_sequence.copy()
 
     def get_correction(self):
         return self.correction
@@ -92,7 +90,7 @@ def bfs(initial_rna):
                 if (u.is_valid()):
                     final = u
                     moves = ''
-                    while not final.get_correction() == 'non':
+                    while not final.get_correction() == 'n':
                         moves += final.get_correction()
                         final = parent[final]
                     return moves[::-1]
@@ -125,11 +123,11 @@ def bfs(initial_rna):
 
 
 def main(argv):
+    filename = "testcases/vaccine.in1"
     # if (len(argv) != 2):
     #     print("Expected 1 argument, got", len(argv) - 1)
     #     exit(2)
     # filename = argv[1]
-    filename = "test.txt"
     with open(filename, 'rt') as fn:
         count_bases = int(fn.readline())
         for i in range(count_bases):
