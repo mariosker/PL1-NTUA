@@ -12,28 +12,29 @@ class rna_data:
                  final_rna_sequence=None,
                  correction=None):
         self.initial_size = len(initial_rna_sequence)
-        if type(initial_rna_sequence) == str:
+
+        if (type(initial_rna_sequence) == str):
             self.initial_rna_sequence = deque(initial_rna_sequence)
         else:
             self.initial_rna_sequence = initial_rna_sequence
 
-        if final_rna_sequence == None:
+        if (final_rna_sequence == None):
             self.final_rna_sequence = deque()
         else:
             self.final_rna_sequence = deque(final_rna_sequence)
 
         self.correction = correction
-        if correction == None:
+        if (correction == None):
             self.correction = 'non'
-        elif correction == 'p':
+        elif (correction == 'p'):
             self.push()
-        elif correction == 'c':
+        elif (correction == 'c'):
             self.complement()
-        elif correction == 'r':
+        elif (correction == 'r'):
             self.reverse()
 
     def push(self):
-        if self.initial_size == 0:
+        if (self.initial_size == 0):
             return
         base = self.initial_rna_sequence.pop()
         self.final_rna_sequence.appendleft(base)
@@ -54,67 +55,70 @@ class rna_data:
         self.final_rna_sequence.reverse()
 
     def is_valid(self):
-        if self.initial_size != 0:
+        if (self.initial_size != 0):
             return False
         found = set()
         previous = None
 
         for b in self.final_rna_sequence:
-            if b not in found:
+            if (b not in found):
                 found.add(b)
                 previous = b
-            if b in found and previous == b:
+            if (b in found and previous == b):
                 continue
-            if b in found and previous != b:
+            if (b in found and previous != b):
                 return False
         return True
 
-    def __str__(self):
-        return self.correction + "+" + "".join(
-            self.initial_rna_sequence) + "+" + "".join(self.final_rna_sequence)
+    def get_initial_rna_sequence(self):
+        return "".join(self.initial_rna_sequence)
+
+    def get_final_rna_sequence(self):
+        return "".join(self.final_rna_sequence)
+
+    def get_correction(self):
+        return self.correction
 
 
 def bfs(initial_rna):
-    level = {str(initial_rna): 0}
-    parent = {str(initial_rna): None}
+    level = {initial_rna: 0}
+    parent = {initial_rna: None}
     frontier = [initial_rna]
     i = 1
     while frontier:
-        # prt = [str(i) for i in frontier]
-        # print(prt)
         next = []
         for u in frontier:
-            if (u.initial_size) == 0:
-                if u.is_valid():
-                    # debug("Valid" + str(u))
-                    # print(parent)
-                    final = str(u)
+            if (u.initial_size == 0):
+                if (u.is_valid()):
+                    final = u
                     moves = ''
-                    while not final.startswith("non"):
-                        moves += final[0]
+                    while not final.get_correction() == 'non':
+                        moves += final.get_correction()
                         final = parent[final]
                     return moves[::-1]
 
             if (u.initial_size != 0):
-                p = rna_data("".join(u.initial_rna_sequence),
-                             "".join(u.final_rna_sequence), 'p')
-                c = rna_data("".join(u.initial_rna_sequence),
-                             "".join(u.final_rna_sequence), 'c')
+                p = rna_data(u.get_initial_rna_sequence(),
+                             u.get_final_rna_sequence(), 'p')
+                c = rna_data(u.get_initial_rna_sequence(),
+                             u.get_final_rna_sequence(), 'c')
             else:
                 p = None
                 c = None
 
-            r = rna_data("".join(u.initial_rna_sequence),
-                         "".join(u.final_rna_sequence), 'r')
+            r = rna_data(u.get_initial_rna_sequence(),
+                         u.get_final_rna_sequence(), 'r')
 
             corrections = [r]
-            if u.initial_size != 0:
+            if (u.initial_size != 0):
                 corrections.extend([p, c])
+
             for v in corrections:
-                if str(v) not in level:
-                    level[str(v)] = i
-                    parent[str(v)] = str(u)
+                if (v not in level):
+                    level[v] = i
+                    parent[v] = u
                     next.append(v)
+
         frontier = next
         i += 1
     return (None)
@@ -128,12 +132,10 @@ def main(argv):
     filename = "test.txt"
     with open(filename, 'rt') as fn:
         count_bases = int(fn.readline())
-        # debug("Number of tests: " + str(count_bases))
         for i in range(count_bases):
             base = rna_data(fn.readline()[:-1])
-            # debug("Test starting with final base: " + str(base))
-            a = bfs(base)
-            print(a)
+            res = bfs(base)
+            print(res)
 
 
 if __name__ == "__main__":
