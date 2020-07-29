@@ -1,7 +1,7 @@
 import sys
 import time
 
-DEBUG = False
+DEBUG = True
 
 BLUE = '\033[94m'
 GREEN = '\033[92m'
@@ -14,21 +14,13 @@ class rna_data:
                  initial_rna_sequence,
                  final_rna_sequence=None,
                  correction=None,
-                 initial_size=None):
+                 initial_size=None,
+                 previus=None):
         self.initial_size = initial_size if initial_size != None else len(
             initial_rna_sequence)
 
-        if (type(initial_rna_sequence) == str):
-            self.initial_rna_sequence = list(initial_rna_sequence)
-        else:
-            self.initial_rna_sequence = initial_rna_sequence
-
-        if (final_rna_sequence == None):
-            self.final_rna_sequence = list()
-        elif (type(final_rna_sequence) == str):
-            self.final_rna_sequence = list(final_rna_sequence)
-        else:
-            self.final_rna_sequence = final_rna_sequence
+        self.initial_rna_sequence = initial_rna_sequence
+        self.final_rna_sequence = final_rna_sequence
 
         self.correction = correction
         if (correction == None):
@@ -43,12 +35,14 @@ class rna_data:
     def push(self):
         if (self.initial_size == 0):
             return
-        base = self.initial_rna_sequence.pop()
-        self.final_rna_sequence.insert(0, base)
+        base = self.initial_rna_sequence[-1]
+        self.initial_rna_sequence = self.initial_rna_sequence[:-1]
+        self.final_rna_sequence = self.final_rna_sequence + base if self.final_rna_sequence != None else base
         self.initial_size -= 1
 
     def complement(self):
-        for i in range(len(self.initial_rna_sequence)):
+        self.initial_rna_sequence = list(self.initial_rna_sequence)
+        for i in range(self.initial_size):
             if (self.initial_rna_sequence[i] == "A"):
                 self.initial_rna_sequence[i] = "U"
             elif (self.initial_rna_sequence[i] == "C"):
@@ -57,9 +51,11 @@ class rna_data:
                 self.initial_rna_sequence[i] = "C"
             elif (self.initial_rna_sequence[i] == "U"):
                 self.initial_rna_sequence[i] = "A"
+        self.initial_rna_sequence = "".join(self.initial_rna_sequence)
 
     def reverse(self):
-        self.final_rna_sequence.reverse()
+        if self.final_rna_sequence != None:
+            self.final_rna_sequence = self.final_rna_sequence[::-1]
 
     def is_valid(self):
         if (self.initial_size != 0):
@@ -77,6 +73,19 @@ class rna_data:
                 return False
         return True
 
+    def __eq__(self, other):
+        if (type(self) is not type(other)):
+            return False
+
+        return (self.initial_rna_sequence == other.initial_rna_sequence
+                and self.final_rna_sequence == other.final_rna_sequence)
+
+    def __hash__(self):
+        return hash((
+            self.initial_rna_sequence,
+            self.final_rna_sequence,
+        ))
+
 
 def debug(rna: rna_data, msg="", color=RED):
     print(color + msg + "{}({}) -> {} ".format(
@@ -84,14 +93,16 @@ def debug(rna: rna_data, msg="", color=RED):
 
 
 def bfs(initial_rna):
+    level = set()
     parent = {initial_rna: None}
     frontier = [initial_rna]
+    level.add(initial_rna)
     while frontier:
         next = []
         for u in frontier:
             if (u.initial_size == 0):
-                debug(u, "size satisfied ", BLUE)
                 if (u.is_valid()):
+                    # debug(u, "satisfied ", BLUE)
                     # final rna sequence found, now recreating steps
                     final = u
 
@@ -110,16 +121,13 @@ def bfs(initial_rna):
             temp_size = u.initial_size
 
             if (u.initial_size != 0):
-                p = rna_data(temp_initial_rna.copy(), temp_final_rna.copy(),
-                             'p', temp_size)
-                c = rna_data(temp_initial_rna.copy(), temp_final_rna, 'c',
-                             temp_size)
+                p = rna_data(temp_initial_rna, temp_final_rna, 'p', temp_size)
+                c = rna_data(temp_initial_rna, temp_final_rna, 'c', temp_size)
             else:
                 p = None
                 c = None
 
-            r = rna_data(temp_initial_rna, temp_final_rna.copy(), 'r',
-                         temp_size)
+            r = rna_data(temp_initial_rna, temp_final_rna, 'r', temp_size)
 
             if (u.initial_size != 0):
                 corrections = [c, p, r]
@@ -127,8 +135,8 @@ def bfs(initial_rna):
                 corrections = [r]
 
             for v in corrections:
-                if (v not in parent):
-                    debug(v, "not in dict ")
+                if (v not in level):
+                    level.add(v)
                     parent[v] = u
                     next.append(v)
 
