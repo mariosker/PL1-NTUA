@@ -1,65 +1,50 @@
 import sys
 import time
-
-DEBUG = True
+import collections
+DEBUG = False
 
 BLUE = '\033[94m'
 GREEN = '\033[92m'
 ENDC = '\033[0m'
 RED = '\033[91m'
 
+complement_dict = {'A': 'U', 'C': 'G', 'G': 'C', 'U': 'A'}
+
 
 class rna_data:
     def __init__(self,
                  initial_rna_sequence,
-                 final_rna_sequence=None,
+                 final_rna_sequence=collections.deque(),
+                 previous=None,
                  correction=None,
-                 initial_size=None,
-                 previus=None):
-        self.initial_size = initial_size if initial_size != None else len(
+                 initial_rna_size=None):
+        self.initial_rna_size = initial_rna_size if initial_rna_size != None else len(
             initial_rna_sequence)
 
         self.initial_rna_sequence = initial_rna_sequence
         self.final_rna_sequence = final_rna_sequence
-
+        self.previous = previous
         self.correction = correction
-        if (correction == None):
-            self.correction = 'n'
-        elif (correction == 'p'):
-            self.push()
-        elif (correction == 'c'):
-            self.complement()
-        elif (correction == 'r'):
-            self.reverse()
 
     def push(self):
-        if (self.initial_size == 0):
+        if (self.initial_rna_size == 0):
             return
-        base = self.initial_rna_sequence[-1]
-        self.initial_rna_sequence = self.initial_rna_sequence[:-1]
-        self.final_rna_sequence = self.final_rna_sequence + base if self.final_rna_sequence != None else base
-        self.initial_size -= 1
+        base = self.initial_rna_sequence.pop()
+        self.final_rna_sequence.appendleft(base)
+        self.initial_rna_size -= 1
 
     def complement(self):
-        self.initial_rna_sequence = list(self.initial_rna_sequence)
-        for i in range(self.initial_size):
-            if (self.initial_rna_sequence[i] == "A"):
-                self.initial_rna_sequence[i] = "U"
-            elif (self.initial_rna_sequence[i] == "C"):
-                self.initial_rna_sequence[i] = "G"
-            elif (self.initial_rna_sequence[i] == "G"):
-                self.initial_rna_sequence[i] = "C"
-            elif (self.initial_rna_sequence[i] == "U"):
-                self.initial_rna_sequence[i] = "A"
-        self.initial_rna_sequence = "".join(self.initial_rna_sequence)
+        bases = [complement_dict[base] for base in self.initial_rna_sequence]
+        self.initial_rna_sequence = bases
 
     def reverse(self):
         if self.final_rna_sequence != None:
-            self.final_rna_sequence = self.final_rna_sequence[::-1]
+            self.final_rna_sequence.reverse()
 
     def is_valid(self):
-        if (self.initial_size != 0):
-            return False
+        if self.final_rna_sequence == None:
+            return True
+
         found = set()
         previous = None
 
@@ -73,6 +58,30 @@ class rna_data:
                 return False
         return True
 
+    def next(self):
+        r = rna_data(self.initial_rna_sequence, self.final_rna_sequence.copy(),
+                     self, 'r', self.initial_rna_size)
+        r.reverse()
+
+        if self.initial_rna_size != 0:
+            p = rna_data(self.initial_rna_sequence.copy(),
+                         self.final_rna_sequence.copy(), self, 'p',
+                         self.initial_rna_size)
+            p.push()
+
+            if not p.is_valid():
+                p = None
+
+            c = rna_data(self.initial_rna_sequence.copy(),
+                         self.final_rna_sequence, self, 'c',
+                         self.initial_rna_size)
+            c.complement()
+        else:
+            p = None
+            c = None
+
+        return [c, p, r]
+
     def __eq__(self, other):
         if (type(self) is not type(other)):
             return False
@@ -82,69 +91,42 @@ class rna_data:
 
     def __hash__(self):
         return hash((
-            self.initial_rna_sequence,
-            self.final_rna_sequence,
+            "".join(self.initial_rna_sequence),
+            "".join(self.final_rna_sequence),
         ))
 
 
-def debug(rna: rna_data, msg="", color=RED):
-    print(color + msg + "{}({}) -> {} ".format(
-        rna.initial_rna_sequence, rna.initial_size, rna.final_rna_sequence))
-
-
 def bfs(initial_rna):
-    level = set()
-    parent = {initial_rna: None}
+    seen = set()
+    seen.add(initial_rna)
+
     frontier = [initial_rna]
-    level.add(initial_rna)
     while frontier:
         next = []
         for u in frontier:
-            if (u.initial_size == 0):
+            if (u.initial_rna_size == 0):
                 if (u.is_valid()):
-                    # debug(u, "satisfied ", BLUE)
-                    # final rna sequence found, now recreating steps
-                    final = u
+                    a = []
+                    while (u.previous != None):
+                        a.append(u.correction)
+                        u = u.previous
+                    a.reverse()
+                    return "".join(a)
+            next_moves = u.next()
 
-                    moves = []
-                    moves_append = moves.append
-
-                    while not final.correction == 'n':
-                        moves_append(final.correction)
-                        final = parent[final]
-
-                    moves.reverse()
-                    return "".join(moves)
-
-            temp_initial_rna = u.initial_rna_sequence
-            temp_final_rna = u.final_rna_sequence
-            temp_size = u.initial_size
-
-            if (u.initial_size != 0):
-                p = rna_data(temp_initial_rna, temp_final_rna, 'p', temp_size)
-                c = rna_data(temp_initial_rna, temp_final_rna, 'c', temp_size)
-            else:
-                p = None
-                c = None
-
-            r = rna_data(temp_initial_rna, temp_final_rna, 'r', temp_size)
-
-            if (u.initial_size != 0):
-                corrections = [c, p, r]
-            else:
-                corrections = [r]
-
-            for v in corrections:
-                if (v not in level):
-                    level.add(v)
-                    parent[v] = u
-                    next.append(v)
+            for v in next_moves:
+                if v != None:
+                    if (v not in seen):
+                        seen.add(v)
+                        next.append(v)
 
         frontier = next
+    return None
 
 
 def main(argv):
-    filename = "testcases/vaccine.in1"
+    start = time.time()
+    filename = "testcases/vaccine.in11"
     # if (len(argv) != 2):
     #     print("Expected 1 argument, got", len(argv) - 1)
     #     exit(2)
@@ -156,7 +138,8 @@ def main(argv):
         for i in range(count_bases):
             if DEBUG:
                 s = time.time()
-            base = rna_data(fn.readline()[:-1])
+            rna = collections.deque(fn.readline()[:-1])
+            base = rna_data(rna)
             res = bfs(base)
 
             if DEBUG:
@@ -167,6 +150,9 @@ def main(argv):
                       sum_time, ENDC)
             else:
                 print(res)
+    if DEBUG:
+        end = time.time()
+        print(GREEN + "TOTAL TIME: ", end - start, ENDC)
 
 
 if __name__ == "__main__":

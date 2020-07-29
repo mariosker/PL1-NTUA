@@ -1,12 +1,13 @@
 import sys
 import time
-
 DEBUG = True
 
 BLUE = '\033[94m'
 GREEN = '\033[92m'
 ENDC = '\033[0m'
 RED = '\033[91m'
+
+complement = {'A': 'U', 'C': 'G', 'G': 'C', 'U': 'A'}
 
 
 class rna_data:
@@ -33,17 +34,9 @@ class rna_data:
         self.initial_rna_size -= 1
 
     def complement(self):
-        self.initial_rna_sequence = list(self.initial_rna_sequence)
-        for i in range(self.initial_rna_size):
-            if (self.initial_rna_sequence[i] == "A"):
-                self.initial_rna_sequence[i] = "U"
-            elif (self.initial_rna_sequence[i] == "C"):
-                self.initial_rna_sequence[i] = "G"
-            elif (self.initial_rna_sequence[i] == "G"):
-                self.initial_rna_sequence[i] = "C"
-            elif (self.initial_rna_sequence[i] == "U"):
-                self.initial_rna_sequence[i] = "A"
-        self.initial_rna_sequence = "".join(self.initial_rna_sequence)
+        bases = list(self.initial_rna_sequence)
+        bases = [complement[base] for base in bases]
+        self.initial_rna_sequence = ''.join(bases)
 
     def reverse(self):
         if self.final_rna_sequence != None:
@@ -78,6 +71,9 @@ class rna_data:
             p = rna_data(self.initial_rna_sequence, self.final_rna_sequence,
                          self, 'p', self.initial_rna_size)
             p.push()
+
+            if not p.is_valid():
+                p = None
 
             c = rna_data(self.initial_rna_sequence, self.final_rna_sequence,
                          self, 'c', self.initial_rna_size)
@@ -118,11 +114,11 @@ def bfs(initial_rna):
                         u = u.previous
                     a.reverse()
                     return "".join(a)
-            corrections = u.next()
+            next_moves = u.next()
 
-            for v in corrections:
+            for v in next_moves:
                 if v != None:
-                    if (v not in seen and v.is_valid()):
+                    if (v not in seen):
                         seen.add(v)
                         next.append(v)
 
@@ -131,7 +127,8 @@ def bfs(initial_rna):
 
 
 def main(argv):
-    filename = "testcases/vaccine.in6"
+    start = time.time()
+    filename = "testcases/vaccine.in11"
     # if (len(argv) != 2):
     #     print("Expected 1 argument, got", len(argv) - 1)
     #     exit(2)
@@ -154,6 +151,9 @@ def main(argv):
                       sum_time, ENDC)
             else:
                 print(res)
+    if DEBUG:
+        end = time.time()
+        print(GREEN + "TOTAL TIME: ", end - start, ENDC)
 
 
 if __name__ == "__main__":
