@@ -2,6 +2,10 @@ import sys
 from collections import deque
 import time
 
+BLUE = '\033[94m'
+GREEN = '\033[92m'
+ENDC = '\033[0m'
+
 
 class rna_data:
     def __init__(self,
@@ -71,6 +75,8 @@ class rna_data:
                 return False
         return True
 
+
+'''
     def get_initial_rna_sequence(self):
         return self.initial_rna_sequence.copy()
 
@@ -81,7 +87,7 @@ class rna_data:
         return self.correction
 
 
-'''
+
 def bfs(initial_rna):
     level = {initial_rna: 0}
     parent = {initial_rna: None}
@@ -135,32 +141,39 @@ def bfs(initial_rna):
         for u in frontier:
             if (u.initial_size == 0):
                 if (u.is_valid()):
+                    # final rna sequence found, now recreating steps
                     final = u
+
                     moves = []
                     moves_append = moves.append
+
                     while not final.correction == 'n':
                         moves_append(final.correction)
                         final = parent[final]
+
                     moves.reverse()
                     return "".join(moves)
 
-            temp_initial = u.initial_rna_sequence
-            temp_final = u.final_rna_sequence
+            temp_initial_rna = u.initial_rna_sequence
+            temp_final_rna = u.final_rna_sequence
             temp_size = u.initial_size
 
             if (u.initial_size != 0):
-                p = rna_data(temp_initial.copy(), temp_final.copy(), 'p',
+                p = rna_data(temp_initial_rna.copy(), temp_final_rna.copy(),
+                             'p', temp_size)
+                c = rna_data(temp_initial_rna.copy(), temp_final_rna, 'c',
                              temp_size)
-                c = rna_data(temp_initial.copy(), temp_final, 'c', temp_size)
             else:
                 p = None
                 c = None
 
-            r = rna_data(temp_initial, temp_final.copy(), 'r', temp_size)
+            r = rna_data(temp_initial_rna, temp_final_rna.copy(), 'r',
+                         temp_size)
 
-            corrections = [r]
             if (u.initial_size != 0):
-                corrections.extend([p, c])
+                corrections = [p, c, r]
+            else:
+                corrections = [r]
 
             for v in corrections:
                 if (v not in parent):
@@ -172,20 +185,23 @@ def bfs(initial_rna):
 
 def main(argv):
     filename = "testcases/vaccine.in1"
-    # filename = "test.txt"
     # if (len(argv) != 2):
     #     print("Expected 1 argument, got", len(argv) - 1)
     #     exit(2)
     # filename = argv[1]
+    sum_time = 0
     with open(filename, 'rt') as fn:
         count_bases = int(fn.readline())
         for i in range(count_bases):
             s = time.time()
             base = rna_data(fn.readline()[:-1])
             res = bfs(base)
+            # print(res)
             print(res, end=" - ")
             e = time.time()
-            print("TOT:", e - s)
+            sum_time += e - s
+            print(BLUE + "TEST TIME:", e - s, GREEN + "TOTAL TIME:", sum_time,
+                  ENDC)
 
 
 if __name__ == "__main__":
