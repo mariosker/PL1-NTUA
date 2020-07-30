@@ -1,5 +1,7 @@
 import sys
 import time
+from multiprocessing import Pool
+
 DEBUG = True
 
 BLUE = '\033[94m'
@@ -127,33 +129,45 @@ def bfs(initial_rna):
 
 
 def main(argv):
-    start = time.time()
-    filename = "testcases/vaccine.in11"
-    # if (len(argv) != 2):
-    #     print("Expected 1 argument, got", len(argv) - 1)
-    #     exit(2)
-    # filename = argv[1]
-
-    sum_time = 0
-    with open(filename, 'rt') as fn:
-        count_bases = int(fn.readline())
-        for i in range(count_bases):
-            if DEBUG:
+    if DEBUG:
+        '''
+        # start = time.time()
+        # base = rna_data("AGCGGCGGGAACGGUCUACAAACGAACCGC")
+        # res = bfs(base)
+        # print(res)
+        # end = time.time()
+        # print(GREEN + "TOTAL TIME: ", end - start, ENDC)
+        '''
+        start = time.time()
+        filename = "testcases/vaccine.in6"
+        if (len(argv) == 2):
+            filename = argv[1]
+        with open(filename, 'rt') as fn:
+            count_bases = int(fn.readline())
+            for i in range(count_bases):
                 s = time.time()
-            base = rna_data(fn.readline()[:-1])
-            res = bfs(base)
-
-            if DEBUG:
+                base = rna_data(fn.readline()[:-1])
+                res = bfs(base)
                 print(res, end=" - ")
                 e = time.time()
-                sum_time += e - s
-                print(BLUE + "TEST TIME:", e - s, GREEN + "TOTAL TIME:",
-                      sum_time, ENDC)
-            else:
-                print(res)
-    if DEBUG:
+
+                print(BLUE + "TEST TIME:", e - s, ENDC)
         end = time.time()
+
         print(GREEN + "TOTAL TIME: ", end - start, ENDC)
+
+    else:
+        if (len(argv) != 2):
+            print("Expected 1 argument, got", len(argv) - 1)
+            exit(2)
+        filename = argv[1]
+
+        with open(filename, 'rt') as fn:
+            count_bases = int(fn.readline())
+            for i in range(count_bases):
+                base = rna_data(fn.readline()[:-1])
+                res = bfs(base)
+                print(res)
 
 
 if __name__ == "__main__":
