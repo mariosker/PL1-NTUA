@@ -25,7 +25,7 @@ class CoronaSpread:
         """creates map from a file. The map contains pathways, blocked pathways
         and airports. Also the function saves where the traveller, the airports
         , the destination and the outbreak initial point are.
-
+'X')
         Args:
             file (file object): the file to be read
         """
