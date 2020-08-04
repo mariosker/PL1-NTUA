@@ -1,10 +1,8 @@
 import sys
 import time
-from multiprocessing import Pool
+import collections
 
 DEBUG = True
-
-BLUE = '\033[94m'
 GREEN = '\033[92m'
 ENDC = '\033[0m'
 RED = '\033[91m'
@@ -36,8 +34,7 @@ class rna_data:
         self.initial_rna_size -= 1
 
     def complement(self):
-        bases = list(self.initial_rna_sequence)
-        bases = [complement[base] for base in bases]
+        bases = [complement[base] for base in self.initial_rna_sequence]
         self.initial_rna_sequence = ''.join(bases)
 
     def reverse(self):
@@ -130,16 +127,19 @@ def bfs(initial_rna):
 
 def main(argv):
     if DEBUG:
-        '''
-        # start = time.time()
-        # base = rna_data("AGCGGCGGGAACGGUCUACAAACGAACCGC")
-        # res = bfs(base)
-        # print(res)
-        # end = time.time()
-        # print(GREEN + "TOTAL TIME: ", end - start, ENDC)
-        '''
+
         start = time.time()
-        filename = "testcases/vaccine.in6"
+        base = rna_data(
+            "GGUUCCAGAUAGGUUAUAGAAGAGUUAAUUGUUCGGCUAGCGGCCCCCGGAAUGUUCGAGUAGGGGGCACUAUGACCCACUCCCCUUUUUAAAAG"
+        )
+        res = bfs(base)
+        print(res)
+        end = time.time()
+        print(GREEN + "TOTAL TIME: ", end - start, ENDC)
+        exit()
+
+        start = time.time()
+        filename = "testcases/vaccine.in11"
         if (len(argv) == 2):
             filename = argv[1]
         with open(filename, 'rt') as fn:
