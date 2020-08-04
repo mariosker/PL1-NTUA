@@ -1,6 +1,16 @@
+'''
+Project     : Programming Languages 1 - Assignment 3 - Exercise 2
+Author(s)   : Ioannis Michail Kazelidis (gkazel@outlook.com)
+              Marios Kerasiotis (marioskerasiotis@gmail.com)
+Date        : August 5, 2020.
+Description : Vaccine. (Python)
+-----------
+School of ECE, National Technical University of Athens.
+'''
+
 import sys
 import time
-import collections
+# import collections
 
 DEBUG = True
 GREEN = '\033[92m'
@@ -10,14 +20,17 @@ RED = '\033[91m'
 complement = {'A': 'U', 'C': 'G', 'G': 'C', 'U': 'A'}
 
 
-class rna_data:
+class RnaData:
+    """Contains two stacks, one has the initial rna and other the final rna sequence.
+    """
+
     def __init__(self,
                  initial_rna_sequence,
                  final_rna_sequence=None,
                  previous=None,
                  correction=None,
                  initial_rna_size=None):
-        self.initial_rna_size = initial_rna_size if initial_rna_size != None else len(
+        self.initial_rna_size = initial_rna_size if initial_rna_size is not None else len(
             initial_rna_sequence)
 
         self.initial_rna_sequence = initial_rna_sequence
@@ -26,11 +39,11 @@ class rna_data:
         self.correction = correction
 
     def push(self):
-        if (self.initial_rna_size == 0):
+        if self.initial_rna_size == 0:
             return
         base = self.initial_rna_sequence[-1]
         self.initial_rna_sequence = self.initial_rna_sequence[:-1]
-        self.final_rna_sequence = self.final_rna_sequence + base if self.final_rna_sequence != None else base
+        self.final_rna_sequence = self.final_rna_sequence + base if self.final_rna_sequence is not None else base
         self.initial_rna_size -= 1
 
     def complement(self):
@@ -38,7 +51,7 @@ class rna_data:
         self.initial_rna_sequence = ''.join(bases)
 
     def reverse(self):
-        if self.final_rna_sequence != None:
+        if self.final_rna_sequence is not None:
             self.final_rna_sequence = self.final_rna_sequence[::-1]
 
     def is_valid(self):
@@ -49,33 +62,33 @@ class rna_data:
         previous = None
 
         for b in self.final_rna_sequence:
-            if (b not in found):
+            if b not in found:
                 found.add(b)
                 previous = b
-            if (b in found and previous == b):
+            if b in found and previous == b:
                 continue
-            if (b in found and previous != b):
+            if b in found and previous != b:
                 return False
         return True
 
     def next(self):
-        if self.final_rna_sequence != None:
-            r = rna_data(self.initial_rna_sequence, self.final_rna_sequence,
-                         self, 'r', self.initial_rna_size)
+        if self.final_rna_sequence is not None:
+            r = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'r',
+                        self.initial_rna_size)
             r.reverse()
         else:
             r = None
 
         if self.initial_rna_size != 0:
-            p = rna_data(self.initial_rna_sequence, self.final_rna_sequence,
-                         self, 'p', self.initial_rna_size)
+            p = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'p',
+                        self.initial_rna_size)
             p.push()
 
             if not p.is_valid():
                 p = None
 
-            c = rna_data(self.initial_rna_sequence, self.final_rna_sequence,
-                         self, 'c', self.initial_rna_size)
+            c = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'c',
+                        self.initial_rna_size)
             c.complement()
         else:
             p = None
@@ -83,18 +96,16 @@ class rna_data:
 
         return [c, p, r]
 
-    def __eq__(self, other):
-        if (type(self) is not type(other)):
-            return False
+    def __key(self):
+        return (self.initial_rna_sequence, self.final_rna_sequence)
 
-        return (self.initial_rna_sequence == other.initial_rna_sequence
-                and self.final_rna_sequence == other.final_rna_sequence)
+    def __eq__(self, other):
+        if isinstance(other, RnaData):
+            return self.__key() == other.__key()
+        return NotImplemented
 
     def __hash__(self):
-        return hash((
-            self.initial_rna_sequence,
-            self.final_rna_sequence,
-        ))
+        return hash(self.__key())
 
 
 def bfs(initial_rna):
@@ -105,10 +116,10 @@ def bfs(initial_rna):
     while frontier:
         next = []
         for u in frontier:
-            if (u.initial_rna_size == 0):
-                if (u.is_valid()):
+            if u.initial_rna_size == 0:
+                if u.is_valid():
                     a = []
-                    while (u.previous != None):
+                    while u.previous is not None:
                         a.append(u.correction)
                         u = u.previous
                     a.reverse()
@@ -116,8 +127,8 @@ def bfs(initial_rna):
             next_moves = u.next()
 
             for v in next_moves:
-                if v != None:
-                    if (v not in seen):
+                if v is not None:
+                    if v not in seen:
                         seen.add(v)
                         next.append(v)
 
@@ -129,7 +140,7 @@ def main(argv):
     if DEBUG:
 
         start = time.time()
-        base = rna_data(
+        base = RnaData(
             "GGUUCCAGAUAGGUUAUAGAAGAGUUAAUUGUUCGGCUAGCGGCCCCCGGAAUGUUCGAGUAGGGGGCACUAUGACCCACUCCCCUUUUUAAAAG"
         )
         res = bfs(base)
@@ -140,13 +151,13 @@ def main(argv):
 
         start = time.time()
         filename = "testcases/vaccine.in11"
-        if (len(argv) == 2):
+        if len(argv) == 2:
             filename = argv[1]
         with open(filename, 'rt') as fn:
             count_bases = int(fn.readline())
-            for i in range(count_bases):
+            for _ in range(count_bases):
                 s = time.time()
-                base = rna_data(fn.readline()[:-1])
+                base = RnaData(fn.readline()[:-1])
                 res = bfs(base)
                 print(res, end=" - ")
                 e = time.time()
@@ -157,15 +168,15 @@ def main(argv):
         print(GREEN + "TOTAL TIME: ", end - start, ENDC)
 
     else:
-        if (len(argv) != 2):
+        if len(argv) != 2:
             print("Expected 1 argument, got", len(argv) - 1)
             exit(2)
         filename = argv[1]
 
         with open(filename, 'rt') as fn:
             count_bases = int(fn.readline())
-            for i in range(count_bases):
-                base = rna_data(fn.readline()[:-1])
+            for _ in range(count_bases):
+                base = RnaData(fn.readline()[:-1])
                 res = bfs(base)
                 print(res)
 
