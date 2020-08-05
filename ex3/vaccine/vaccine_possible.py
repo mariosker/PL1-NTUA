@@ -71,13 +71,41 @@ class RnaData:
                 return False
         return True
 
+    # def next(self):
+    #     if self.final_rna_sequence is not None:
+    #         r = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'r',
+    #                     self.initial_rna_size)
+    #         r.reverse()
+    #     else:
+    #         r = None
+
+    #     if self.initial_rna_size != 0:
+    #         p = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'p',
+    #                     self.initial_rna_size)
+    #         p.push()
+
+    #         if not p.is_valid():
+    #             p = None
+
+    #         c = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'c',
+    #                     self.initial_rna_size)
+    #         c.complement()
+    #     else:
+    #         p = None
+    #         c = None
+
+    #     return [c, p, r]
+
     def next(self):
+        c = None
+        p = None
+        r = None
+
         if self.final_rna_sequence is not None:
-            r = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'r',
-                        self.initial_rna_size)
-            r.reverse()
-        else:
-            r = None
+            if self.correction != 'r':
+                r = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'r',
+                            self.initial_rna_size)
+                r.reverse()
 
         if self.initial_rna_size != 0:
             p = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'p',
@@ -87,12 +115,10 @@ class RnaData:
             if not p.is_valid():
                 p = None
 
-            c = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'c',
-                        self.initial_rna_size)
-            c.complement()
-        else:
-            p = None
-            c = None
+            if self.correction != 'c':
+                c = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'c',
+                            self.initial_rna_size)
+                c.complement()
 
         return [c, p, r]
 
