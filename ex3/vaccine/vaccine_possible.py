@@ -10,12 +10,12 @@ School of ECE, National Technical University of Athens.
 
 import sys
 import time
-# import collections
 
 DEBUG = True
-GREEN = '\033[92m'
-ENDC = '\033[0m'
 RED = '\033[91m'
+GREEN = '\033[92m'
+BLUE = '\033[94m'
+ENDC = '\033[0m'
 
 complement = {'A': 'U', 'C': 'G', 'G': 'C', 'U': 'A'}
 
@@ -139,15 +139,15 @@ def bfs(initial_rna):
 def main(argv):
     if DEBUG:
 
-        start = time.time()
-        base = RnaData(
-            "GGUUCCAGAUAGGUUAUAGAAGAGUUAAUUGUUCGGCUAGCGGCCCCCGGAAUGUUCGAGUAGGGGGCACUAUGACCCACUCCCCUUUUUAAAAG"
-        )
-        res = bfs(base)
-        print(res)
-        end = time.time()
-        print(GREEN + "TOTAL TIME: ", end - start, ENDC)
-        exit()
+        #start = time.time()
+        #base = RnaData(
+        #    "GGUUCCAGAUAGGUUAUAGAAGAGUUAAUUGUUCGGCUAGCGGCCCCCGGAAUGUUCGAGUAGGGGGCACUAUGACCCACUCCCCUUUUUAAAAG"
+        #)
+        #res = bfs(base)
+        #print(res)
+        #end = time.time()
+        #print(GREEN + "TOTAL TIME: ", end - start, ENDC)
+        #exit()
 
         start = time.time()
         filename = "testcases/vaccine.in11"
