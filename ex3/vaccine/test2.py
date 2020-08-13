@@ -23,14 +23,13 @@ complement = {'A': 'U', 'C': 'G', 'G': 'C', 'U': 'A'}
 class RnaData:
     """Contains two stacks, one has the initial rna and other the final rna sequence.
     """
-
     def __init__(self,
                  initial_rna_sequence,
-                 final_rna_sequence=[],
+                 final_rna_sequence=None,
                  previous=None,
                  correction=None,
                  initial_rna_size=None,
-                 found = None):
+                 found=None):
         self.initial_rna_size = initial_rna_size if initial_rna_size is not None else len(
             initial_rna_sequence)
 
@@ -38,38 +37,38 @@ class RnaData:
         self.final_rna_sequence = final_rna_sequence
         self.previous = previous
         self.correction = correction
-        self.found =  {'A': False, 'C': False, 'G': False, 'U': False} if found is None else found
+        self.found = {
+            'A': False,
+            'C': False,
+            'G': False,
+            'U': False
+        } if found is None else found
 
     def push(self):
         if self.initial_rna_size == 0:
             return None
-
-        base = self.initial_rna_sequence.pop()
-        self.initial_rna_size -= 1
+        base = self.initial_rna_sequence[-1]
+        self.initial_rna_sequence = self.initial_rna_sequence[:-1]
 
         pr = None
         try:
             pr = self.final_rna_sequence[-1]
         except:
             pass
-
         if self.found[base] == True and base != pr:
             return None
-        self.final_rna_sequence.append(base)
         self.found[base] = True
+        self.final_rna_sequence = self.final_rna_sequence + base if self.final_rna_sequence is not None else base
+        self.initial_rna_size -= 1
         return True
 
     def complement(self):
-        if not self.initial_rna_sequence:
-            return None
-        self.initial_rna_sequence = [complement[base] for base in self.initial_rna_sequence]
-        return True
+        bases = [complement[base] for base in self.initial_rna_sequence]
+        self.initial_rna_sequence = ''.join(bases)
 
     def reverse(self):
-        if not self.final_rna_sequence:
-            return None
-        self.final_rna_sequence.reverse()
-        return True
+        if self.final_rna_sequence is not None:
+            self.final_rna_sequence = self.final_rna_sequence[::-1]
 
     def is_valid(self):
         if self.final_rna_sequence == None:
@@ -88,34 +87,60 @@ class RnaData:
                 return False
         return True
 
+    # def next(self):
+    #     if self.final_rna_sequence is not None:
+    #         r = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'r',
+    #                     self.initial_rna_size)
+    #         r.reverse()
+    #     else:
+    #         r = None
+
+    #     if self.initial_rna_size != 0:
+    #         p = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'p',
+    #                     self.initial_rna_size)
+    #         p.push()
+
+    #         if not p.is_valid():
+    #             p = None
+
+    #         c = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'c',
+    #                     self.initial_rna_size)
+    #         c.complement()
+    #     else:
+    #         p = None
+    #         c = None
+
+    #     return [c, p, r]
+
     def next(self):
         c = None
         p = None
         r = None
 
-        if self.correction != 'r':
-            r = RnaData(self.initial_rna_sequence.copy(), self.final_rna_sequence.copy(), self, 'r',
-                        self.initial_rna_size, self.found.copy())
+        if self.final_rna_sequence is not None:
+            if self.correction != 'r':
+                r = RnaData(self.initial_rna_sequence, self.final_rna_sequence,
+                            self, 'r', self.initial_rna_size,
+                            self.found.copy())
+                r.reverse()
 
-            if r.reverse() is None:
-                r = None
         if self.initial_rna_size != 0:
-            p = RnaData(self.initial_rna_sequence.copy(), self.final_rna_sequence.copy(), self, 'p',
-                        self.initial_rna_size, self.found.copy())
+            p = RnaData(self.initial_rna_sequence, self.final_rna_sequence,
+                        self, 'p', self.initial_rna_size, self.found.copy())
 
             if p.push() is None:
                 p = None
 
             if self.correction != 'c':
-                c = RnaData(self.initial_rna_sequence.copy(), self.final_rna_sequence.copy(), self, 'c',
-                            self.initial_rna_size, self.found.copy())
+                c = RnaData(self.initial_rna_sequence, self.final_rna_sequence,
+                            self, 'c', self.initial_rna_size,
+                            self.found.copy())
+                c.complement()
 
-                if c.complement() is None:
-                    c = None
         return [c, p, r]
 
     def __key(self):
-        return ("".join(self.initial_rna_sequence), "".join(self.final_rna_sequence))
+        return (self.initial_rna_sequence, self.final_rna_sequence)
 
     def __eq__(self, other):
         if isinstance(other, RnaData):
@@ -145,9 +170,10 @@ def bfs(initial_rna):
             next_moves = u.next()
 
             for v in next_moves:
-                if v is not None and v not in seen:
-                    seen.add(v)
-                    next.append(v)
+                if v is not None:
+                    if v not in seen:
+                        seen.add(v)
+                        next.append(v)
 
         frontier = next
     return None
@@ -167,15 +193,14 @@ def main(argv):
         #exit()
 
         start = time.time()
-        filename = "testcases/vaccine.in6"
+        filename = "testcases/vaccine.in11"
         if len(argv) == 2:
             filename = argv[1]
         with open(filename, 'rt') as fn:
             count_bases = int(fn.readline())
             for _ in range(count_bases):
                 s = time.time()
-                base_str = list(fn.readline()[:-1])
-                base = RnaData(base_str)
+                base = RnaData(fn.readline()[:-1])
                 res = bfs(base)
                 print(res, end=" - ")
                 e = time.time()
