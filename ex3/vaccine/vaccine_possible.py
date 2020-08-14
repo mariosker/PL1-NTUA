@@ -12,7 +12,7 @@ import sys
 import time
 
 DEBUG = True
-DEFAULT_FILENAME = "testcases/vaccine.in6"
+DEFAULT_FILENAME = "testcases/vaccine.in11"
 
 RED = '\033[91m'
 GREEN = '\033[92m'
@@ -25,7 +25,6 @@ complement = {'A': 'U', 'C': 'G', 'G': 'C', 'U': 'A'}
 class RnaData:
     """Contains two stacks, one has the initial rna and other the final rna sequence.
     """
-
     def __init__(self,
                  initial_rna_sequence,
                  final_rna_sequence=None,
@@ -105,21 +104,21 @@ class RnaData:
 
         if self.final_rna_sequence is not None:
             if self.correction != 'r':
-                r = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'r',
-                            self.initial_rna_size)
+                r = RnaData(self.initial_rna_sequence, self.final_rna_sequence,
+                            self, 'r', self.initial_rna_size)
                 r.reverse()
 
         if self.initial_rna_size != 0:
-            p = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'p',
-                        self.initial_rna_size)
+            p = RnaData(self.initial_rna_sequence, self.final_rna_sequence,
+                        self, 'p', self.initial_rna_size)
             p.push()
 
             if not p.is_valid():
                 p = None
 
             if self.correction != 'c':
-                c = RnaData(self.initial_rna_sequence, self.final_rna_sequence, self, 'c',
-                            self.initial_rna_size)
+                c = RnaData(self.initial_rna_sequence, self.final_rna_sequence,
+                            self, 'c', self.initial_rna_size)
                 c.complement()
 
         return [c, p, r]
@@ -193,7 +192,10 @@ def main(argv):
                 print(result, end="")
                 case_end_time = time.time()
 
-                print(BLUE + " [CASE TIME: {:.2f}]".format(case_end_time - case_start_time), ENDC)
+                print(
+                    BLUE + " [CASE TIME: {:.2f}]".format(case_end_time -
+                                                         case_start_time),
+                    ENDC)
         end_time = time.time()
 
         print(GREEN + "TOTAL TIME: {:.3f}".format(end_time - start_time), ENDC)

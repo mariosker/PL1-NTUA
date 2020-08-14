@@ -6,7 +6,7 @@ public class Solver {
         System.out.println(initial_rna);
     }
 
-    public void BFS() {
+    // public void BFS() {
 
-    }
+    // }
 }

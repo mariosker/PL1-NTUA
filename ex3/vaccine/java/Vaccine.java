@@ -28,7 +28,7 @@ public class Vaccine {
                 for (int i = 0; i < cnt; i++) {
                     temp = br.readLine();
                     solu = new Solver(temp);
-                    solu.BFS();
+                    // solu.BFS();
                 }
                 br.close();
             } catch (FileNotFoundException e) {
