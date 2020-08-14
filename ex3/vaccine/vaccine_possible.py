@@ -12,6 +12,8 @@ import sys
 import time
 
 DEBUG = True
+DEFAULT_FILENAME = "testcases/vaccine.in6"
+
 RED = '\033[91m'
 GREEN = '\033[92m'
 BLUE = '\033[94m'
@@ -175,23 +177,26 @@ def main(argv):
         #print(GREEN + "TOTAL TIME: ", end - start, ENDC)
         #exit()
 
-        start = time.time()
-        filename = "testcases/vaccine.in11"
+        start_time = time.time()
+        filename = DEFAULT_FILENAME
+
         if len(argv) == 2:
             filename = argv[1]
+
         with open(filename, 'rt') as fn:
             count_bases = int(fn.readline())
+
             for _ in range(count_bases):
-                s = time.time()
+                case_start_time = time.time()
                 base = RnaData(fn.readline()[:-1])
-                res = bfs(base)
-                print(res, end=" - ")
-                e = time.time()
+                result = bfs(base)
+                print(result, end="")
+                case_end_time = time.time()
 
-                print(BLUE + "TEST TIME:", e - s, ENDC)
-        end = time.time()
+                print(BLUE + " [CASE TIME: {:.2f}]".format(case_end_time - case_start_time), ENDC)
+        end_time = time.time()
 
-        print(GREEN + "TOTAL TIME: ", end - start, ENDC)
+        print(GREEN + "TOTAL TIME: {:.3f}".format(end_time - start_time), ENDC)
 
     else:
         if len(argv) != 2:
@@ -203,8 +208,8 @@ def main(argv):
             count_bases = int(fn.readline())
             for _ in range(count_bases):
                 base = RnaData(fn.readline()[:-1])
-                res = bfs(base)
-                print(res)
+                result = bfs(base)
+                print(result)
 
 
 if __name__ == "__main__":
