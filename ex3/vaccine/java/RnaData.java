@@ -1,5 +1,4 @@
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class RnaData {
     LinkedList<Character> initial_rna_sequence;
@@ -51,7 +50,7 @@ public class RnaData {
 
     // }
 
-    // private void next() {
+    // public void next() {
 
     // }
 
