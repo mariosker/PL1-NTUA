@@ -10,14 +10,13 @@ School of ECE, National Technical University of Athens.
 
 import sys
 import time
+from collections import deque
 
 DEBUG = False
 RED = '\033[91m'
 GREEN = '\033[92m'
 BLUE = '\033[94m'
 ENDC = '\033[0m'
-
-complement = {'A': 'U', 'C': 'G', 'G': 'C', 'U': 'A'}
 
 
 class RnaData:
@@ -46,6 +45,7 @@ class RnaData:
         self.initial_rna_size -= 1
 
     def complement(self):
+        complement = {'A': 'U', 'C': 'G', 'G': 'C', 'U': 'A'}
         self.initial_rna_sequence = ''.join(
             [complement[base] for base in self.initial_rna_sequence])
 
@@ -93,7 +93,7 @@ class RnaData:
                             self, 'c', self.initial_rna_size)
                 c.complement()
 
-        return [c, p, r]
+        return (c, p, r)
 
     def __eq__(self, other):
         if isinstance(other, RnaData):
@@ -106,32 +106,61 @@ class RnaData:
         return hash((self.initial_rna_sequence, self.final_rna_sequence))
 
 
+# def bfs(initial_rna):
+#     seen = set()
+#     seenadd = seen.add
+#     seenadd(initial_rna)
+
+#     frontier = [initial_rna]
+#     while frontier:
+#         next = []
+#         nextappend = next.append
+#         for u in frontier:
+#             if u.initial_rna_size == 0:
+#                 a = []
+#                 aappend = a.append
+#                 while u.previous is not None:
+#                     aappend(u.correction)
+#                     u = u.previous
+#                 a.reverse()
+#                 return "".join(a)
+#             next_moves = u.next()
+
+#             for v in next_moves:
+#                 if v is not None and v not in seen:
+#                     seenadd(v)
+#                     nextappend(v)
+
+#         frontier = next
+#     return None
+
+
 def bfs(initial_rna):
     seen = set()
     seenadd = seen.add
     seenadd(initial_rna)
 
-    frontier = [initial_rna]
+    frontier = deque()
+    frontieradd = frontier.append
+    frontierpop = frontier.popleft
+
+    frontieradd(initial_rna)
     while frontier:
-        next = []
-        nextappend = next.append
-        for u in frontier:
-            if u.initial_rna_size == 0:
-                a = []
-                aappend = a.append
-                while u.previous is not None:
-                    aappend(u.correction)
-                    u = u.previous
-                a.reverse()
-                return "".join(a)
-            next_moves = u.next()
+        u = frontierpop()
+        if u.initial_rna_size == 0:
+            a = []
+            aappend = a.append
+            while u.previous is not None:
+                aappend(u.correction)
+                u = u.previous
+            a.reverse()
+            return "".join(a)
 
-            for v in next_moves:
-                if v is not None and v not in seen:
-                    seenadd(v)
-                    nextappend(v)
+        for v in u.next():
+            if v is not None and v not in seen:
+                seenadd(v)
+                frontieradd(v)
 
-        frontier = next
     return None
 
 
@@ -145,12 +174,9 @@ def main(argv):
             next(fn)
             tests = fn.readlines()
         for l in tests:
-            s = time.time()
             rna = l[:-1]
             res = bfs(RnaData(rna, initial_rna_size=len(rna)))
-            print(res, end=" - ")
-            e = time.time()
-            print(BLUE + "TEST TIME:", e - s, ENDC)
+            print(res)
         end = time.time()
 
         print(GREEN + "TOTAL TIME: ", end - start, ENDC)
