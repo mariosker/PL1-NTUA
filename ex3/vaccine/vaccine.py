@@ -11,7 +11,7 @@ School of ECE, National Technical University of Athens.
 import sys
 import time
 
-DEBUG = True
+DEBUG = False
 RED = '\033[91m'
 GREEN = '\033[92m'
 BLUE = '\033[94m'
