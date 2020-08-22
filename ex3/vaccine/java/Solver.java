@@ -10,7 +10,7 @@ public class Solver {
         this.initial_rna = new RnaData(initial_rna);
     }
 
-    public void BFS() {
+    public void BFS() { // ATTENTION:
         Set<RnaData> seen = new HashSet<>();
         Queue<RnaData> remaining = new ArrayDeque<>();
 

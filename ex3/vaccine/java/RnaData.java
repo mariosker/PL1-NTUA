@@ -53,7 +53,7 @@ public class RnaData {
         }
     }
 
-    private void reverse() {
+    private void reverse() { // ATTENTION: den koitame prwta an einai isEmpty opws sthn python
         Collections.reverse(this.final_rna_sequence);
     }
 
@@ -77,13 +77,16 @@ public class RnaData {
 
     public RnaData[] next() {
         RnaData[] returnList = { null, null, null };
-        if (this.final_rna_sequence.isEmpty()) {
-            LinkedList<Character> init_p = new LinkedList();
-            init_p = (LinkedList) this.initial_rna_sequence.clone();
+        if (!this.final_rna_sequence.isEmpty()) { // ATTENTION: xreiazotan ena !
+            if (this.correction != 'r') { // ATTENTION: den uphrxe autos o elegxos opws sthn python, opote ton evala
+                LinkedList<Character> init_p = new LinkedList();
+                init_p = (LinkedList) this.initial_rna_sequence.clone(); // ATTENTION: to reverse ginetai sthn final,
+                                                                         // opote giati clone sthn initial?
 
-            RnaData r = new RnaData(init_p, this.final_rna_sequence, this, 'r', this.initial_rna_size);
-            r.reverse();
-            returnList[2] = r;
+                RnaData r = new RnaData(init_p, this.final_rna_sequence, this, 'r', this.initial_rna_size);
+                r.reverse();
+                returnList[2] = r;
+            }
         }
 
         if (!this.initial_rna_sequence.isEmpty()) {
