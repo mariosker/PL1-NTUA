@@ -1,4 +1,10 @@
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public class RnaData {
     LinkedList<Character> initial_rna_sequence;
@@ -37,19 +43,34 @@ public class RnaData {
     }
 
     private void complement() {
-        Map<Character, Character> complements = new HashMap<>();
-        complements.put('A', 'U');
-        complements.put('U', 'A');
-        complements.put('G', 'C');
-        complements.put('C', 'G');
-
         for (int i = 0; i < this.initial_rna_size; i++) {
-            Character base = complements.get(this.initial_rna_sequence.get(i));
-            this.initial_rna_sequence.set(i, base);
+            Character base = this.initial_rna_sequence.get(i);
+            if (base == 'A') {
+                this.initial_rna_sequence.set(i, 'U');
+            }
+            if (base == 'U') {
+                this.initial_rna_sequence.set(i, 'A');
+            }
+            if (base == 'G') {
+                this.initial_rna_sequence.set(i, 'C');
+            }
+            if (base == 'C') {
+                this.initial_rna_sequence.set(i, 'G');
+            }
         }
     }
 
-    private void reverse() { // ATTENTION: den koitame prwta an einai isEmpty opws sthn python
+    /*
+     * private void complement() { Map<Character, Character> complements = new
+     * HashMap<>(); complements.put('A', 'U'); complements.put('U', 'A');
+     * complements.put('G', 'C'); complements.put('C', 'G');
+     *
+     * for (int i = 0; i < this.initial_rna_size; i++) { Character base =
+     * complements.get(this.initial_rna_sequence.get(i));
+     * this.initial_rna_sequence.set(i, base); } }
+     */
+
+    private void reverse() {
         Collections.reverse(this.final_rna_sequence);
     }
 

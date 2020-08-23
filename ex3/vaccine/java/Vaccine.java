@@ -8,8 +8,11 @@ Description : Vaccine. (Java)
 School of ECE, National Technical University of Athens.
 */
 
-import java.io.*;
-// import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class Vaccine {
     public static void main(String[] args) {

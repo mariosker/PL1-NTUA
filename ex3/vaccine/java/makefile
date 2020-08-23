@@ -7,6 +7,7 @@ test:
 	diff outnow ../testcases/vaccine.out11
 
 zip:
+	rm -f *.zip
 	zip Vaccine.zip *.java
 
 clean:
