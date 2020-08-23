@@ -1,7 +1,4 @@
-import java.util.ArrayDeque;
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 public class Solver {
     RnaData initial_rna;
@@ -10,7 +7,7 @@ public class Solver {
         this.initial_rna = new RnaData(initial_rna);
     }
 
-    public void BFS() { // ATTENTION:
+    public void BFS() {
         Set<RnaData> seen = new HashSet<>();
         Queue<RnaData> remaining = new ArrayDeque<>();
 
@@ -20,8 +17,10 @@ public class Solver {
         while (!remaining.isEmpty()) {
             RnaData s = remaining.remove();
 
-            if (s.getInitial_rna_size() == 0)
-                System.out.println("yes");
+            if (s.getInitial_rna_size() == 0) {
+                PrintSteps(s);
+                return;
+            }
 
             for (RnaData n : s.next()) {
                 if (n != null && !seen.contains(n)) {
@@ -31,5 +30,20 @@ public class Solver {
             }
         }
         return;
+    }
+
+    private void PrintSteps(RnaData final_rna) {
+        List<Character> steps = new ArrayList<>();
+        while (final_rna.correction != null) {
+            steps.add(final_rna.correction);
+            final_rna = final_rna.previous;
+        }
+        Collections.reverse(steps);
+        StringBuilder sb = new StringBuilder();
+        for (Character ch : steps) {
+            sb.append(ch);
+        }
+        String string = sb.toString();
+        System.out.println(string);
     }
 }

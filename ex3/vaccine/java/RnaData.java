@@ -43,10 +43,6 @@ public class RnaData {
         complements.put('G', 'C');
         complements.put('C', 'G');
 
-        for (Character character : this.initial_rna_sequence) {
-            System.out.print(character);
-        }
-
         for (int i = 0; i < this.initial_rna_size; i++) {
             Character base = complements.get(this.initial_rna_sequence.get(i));
             this.initial_rna_sequence.set(i, base);
@@ -75,23 +71,28 @@ public class RnaData {
         return true;
     }
 
+    @SuppressWarnings("unchecked")
     public RnaData[] next() {
         RnaData[] returnList = { null, null, null };
-        if (!this.final_rna_sequence.isEmpty()) { // ATTENTION: xreiazotan ena !
-            if (this.correction != 'r') { // ATTENTION: den uphrxe autos o elegxos opws sthn python, opote ton evala
-                LinkedList<Character> init_p = new LinkedList();
-                init_p = (LinkedList) this.initial_rna_sequence.clone(); // ATTENTION: to reverse ginetai sthn final,
-                                                                         // opote giati clone sthn initial?
+        if (!this.final_rna_sequence.isEmpty()) {
+            if (this.correction != 'r') {
+                LinkedList<Character> list2 = new LinkedList<>();
+                list2 = (LinkedList<Character>) this.final_rna_sequence.clone();
 
-                RnaData r = new RnaData(init_p, this.final_rna_sequence, this, 'r', this.initial_rna_size);
+                RnaData r = new RnaData(this.initial_rna_sequence, list2, this, 'r', this.initial_rna_size);
                 r.reverse();
                 returnList[2] = r;
             }
         }
 
         if (!this.initial_rna_sequence.isEmpty()) {
-            RnaData p = new RnaData(this.initial_rna_sequence, this.final_rna_sequence, this, 'p',
-                    this.initial_rna_size);
+            LinkedList<Character> list1 = new LinkedList<>();
+            list1 = (LinkedList<Character>) this.initial_rna_sequence.clone();
+
+            LinkedList<Character> list2 = new LinkedList<>();
+            list2 = (LinkedList<Character>) this.final_rna_sequence.clone();
+
+            RnaData p = new RnaData(list1, list2, this, 'p', this.initial_rna_size);
             p.push();
             returnList[1] = p;
             if (p != null && !p.is_valid()) {
@@ -100,8 +101,10 @@ public class RnaData {
         }
 
         if (this.correction == null || this.correction != 'c') {
-            RnaData c = new RnaData(this.initial_rna_sequence, this.final_rna_sequence, this, 'c',
-                    this.initial_rna_size);
+            LinkedList<Character> list1 = new LinkedList<>();
+            list1 = (LinkedList<Character>) this.initial_rna_sequence.clone();
+
+            RnaData c = new RnaData(list1, this.final_rna_sequence, this, 'c', this.initial_rna_size);
             c.complement();
             returnList[0] = c;
         }

@@ -13,54 +13,32 @@ import java.io.*;
 
 public class Vaccine {
     public static void main(String[] args) {
-        // String arg = null;
-        // if (args.length == 1) {
-        // arg = args[0];
-        // try {
-        // File myF = new File(arg);
-        // BufferedReader br = new BufferedReader(new FileReader(myF));
-        // String temp;
-        // int cnt;
+        String arg = null;
+        if (args.length == 1) {
+            arg = args[0];
+            try {
+                File myF = new File(arg);
+                BufferedReader br = new BufferedReader(new FileReader(myF));
+                String temp;
+                int cnt;
 
-        // temp = br.readLine();
-        // cnt = Integer.parseInt(temp);
-        // for (int i = 0; i < cnt; i++) {
-        // temp = br.readLine();
-        // Solver solu = new Solver(temp);
-        // solu.BFS();
-        // }
-        // br.close();
-        // } catch (FileNotFoundException e) {
-        // System.out.println("An error occurred.");
-        // e.printStackTrace();
-        // } catch (IOException ie) {
-        // System.out.println("An error occurred.");
-        // ie.printStackTrace();
-        // }
-        // } else {
-        // System.out.println("Wrong input");
-        // }
-
-        try {
-            File myF = new File("../testcases/vaccine.in1");
-            BufferedReader br = new BufferedReader(new FileReader(myF));
-            String temp;
-            int cnt;
-
-            temp = br.readLine();
-            cnt = Integer.parseInt(temp);
-            for (int i = 0; i < cnt; i++) {
                 temp = br.readLine();
-                Solver solu = new Solver(temp);
-                solu.BFS();
+                cnt = Integer.parseInt(temp);
+                for (int i = 0; i < cnt; i++) {
+                    temp = br.readLine();
+                    Solver solu = new Solver(temp);
+                    solu.BFS();
+                }
+                br.close();
+            } catch (FileNotFoundException e) {
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            } catch (IOException ie) {
+                System.out.println("An error occurred.");
+                ie.printStackTrace();
             }
-            br.close();
-        } catch (FileNotFoundException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-        } catch (IOException ie) {
-            System.out.println("An error occurred.");
-            ie.printStackTrace();
+        } else {
+            System.out.println("Wrong input");
         }
     }
 }

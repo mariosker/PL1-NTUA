@@ -3,11 +3,11 @@ Vaccine: Vaccine.java Solver.java
 
 test:
 	rm -f outnow
-	java Vaccine ..//testcases/vaccine.in1 >> outnow
-	diff outnow ../testcases/vaccine.out1
+	java Vaccine ..//testcases/vaccine.in11 >> outnow
+	diff outnow ../testcases/vaccine.out11
 
 zip:
 	zip Vaccine.zip *.java
 
 clean:
-	rm -f Vaccine *.class *.zip
+	rm -f Vaccine *.class *.zip outnow
