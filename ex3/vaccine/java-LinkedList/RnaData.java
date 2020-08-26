@@ -60,16 +60,6 @@ public class RnaData {
         }
     }
 
-    /*
-     * private void complement() { Map<Character, Character> complements = new
-     * HashMap<>(); complements.put('A', 'U'); complements.put('U', 'A');
-     * complements.put('G', 'C'); complements.put('C', 'G');
-     *
-     * for (int i = 0; i < this.initial_rna_size; i++) { Character base =
-     * complements.get(this.initial_rna_sequence.get(i));
-     * this.initial_rna_sequence.set(i, base); } }
-     */
-
     private void reverse() {
         Collections.reverse(this.final_rna_sequence);
     }
