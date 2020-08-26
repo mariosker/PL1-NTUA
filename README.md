@@ -1,5 +1,5 @@
-# Programming Languages I @NTUA
-### Γλώσσες Προγραμματισμού Ι @ΕΜΠ
+# Programming Languages I @ NTUA
+### Γλώσσες Προγραμματισμού Ι @ ΕΜΠ
 
 This repository contains our solutions for the exercises for the course of PL1.
 Programming languages used:
