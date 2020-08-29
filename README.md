@@ -1,6 +1,8 @@
 # Programming Languages I @ NTUA
 ### Γλώσσες Προγραμματισμού Ι @ ΕΜΠ
 
+**Made public on 29/08/2020**
+
 This repository contains our solutions for the exercises for the course of PL1.
 Programming languages used:
 - C/C++
